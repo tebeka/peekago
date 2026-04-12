@@ -1,19 +1,20 @@
 # Peek-A-Go
 
-Peek-A-Go traces a Go program step by step with headless Delve and prints a JSON execution trace.
+Peek-A-Go traces a Go program step by step with headless Delve and serves a browser UI for exploring the execution trace.
 
 The goal is to make Go execution easier to inspect and eventually support visualizations similar to Python Tutor.
 
 ## What It Does
 
-- Accepts a single Go source file containing a runnable `package main`
+- Serves a web UI with a code editor and step-by-step trace viewer
+- Accepts a runnable `package main` program pasted into the browser
 - Writes the source into a temporary module
 - Starts `dlv debug` in headless mode
 - Steps through execution and captures:
   - source line
   - local variables
   - package-level variables
-- Prints the collected trace as formatted JSON
+- Returns the collected trace as JSON to the browser
 
 ## Requirements
 
@@ -22,10 +23,16 @@ The goal is to make Go execution easier to inspect and eventually support visual
 
 ## Usage
 
-Run directly:
+Start the server:
 
 ```bash
-go run . path/to/program.go
+go run .
+```
+
+Listen on another address:
+
+```bash
+go run . -listen :9090
 ```
 
 Show help:
@@ -34,36 +41,69 @@ Show help:
 go run . -h
 ```
 
+Then open `http://localhost:8080`.
+
 Build a binary:
 
 ```bash
 go build -o peek-a-go .
-./peek-a-go path/to/program.go
+./peek-a-go -listen :8080
 ```
 
-## Output
+## Web UI
 
-The CLI prints a JSON array of steps like:
+The browser UI lets you:
+
+- paste or edit Go source
+- run the tracer
+- move backward and forward through the recorded steps
+- inspect the current line, locals, and globals
+
+## JSON API
+
+The server exposes one JSON endpoint:
+
+- `POST /trace`
+
+Request body:
 
 ```json
-[
-  {
-    "File": "main.go",
-    "Line": 5,
-    "Function": "",
-    "Locals": {
-      "x": "2"
-    },
-    "Globals": {
-      "total": "3"
+{
+  "code": "package main\n\nfunc main() {}\n"
+}
+```
+
+Response body:
+
+```json
+{
+  "steps": [
+    {
+      "File": "main.go",
+      "Line": 5,
+      "Function": "",
+      "Locals": {
+        "x": "2"
+      },
+      "Globals": {
+        "total": "3"
+      }
     }
-  }
-]
+  ]
+}
+```
+
+On errors the endpoint returns:
+
+```json
+{
+  "error": "message"
+}
 ```
 
 ## Testing
 
-The test suite uses fixture programs under `testdata/progs`.
+The trace engine tests use fixture programs under `testdata/progs`.
 
 Run tests with:
 
@@ -75,4 +115,4 @@ go test ./...
 
 - The current implementation traces a single linear execution timeline.
 - It is intended for small runnable programs.
-- The trace format is designed for downstream visualization tools.
+- The web UI uses plain JavaScript and no frontend framework.

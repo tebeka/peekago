@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Peek-A-Go</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main class="layout">
+      <section class="hero">
+        <p class="eyebrow">Peek-A-Go</p>
+        <h1>Trace a Go program and inspect it step by step.</h1>
+        <p class="intro">Paste a runnable <code>package main</code> program, run the tracer, then move through execution while watching the current line, locals, and globals update.</p>
+      </section>
+
+      <section class="workspace">
+        <div class="panel compose">
+          <div class="panel-header">
+            <h2>Source</h2>
+            <button id="run-button" type="button">Run Trace</button>
+          </div>
+          <label class="sr-only" for="code-input">Go source code</label>
+          <textarea id="code-input" spellcheck="false">package main
+
+import "fmt"
+
+var total = 1
+
+func add(n int) int {
+	total += n
+	return total
+}
+
+func main() {
+	x := 2
+	y := add(x)
+	fmt.Println(y)
+}</textarea>
+          <p id="status" class="status">Ready.</p>
+        </div>
+
+        <div class="panel viewer">
+          <div class="panel-header">
+            <h2>Execution</h2>
+            <div class="controls">
+              <button id="prev-button" type="button" disabled>Prev</button>
+              <button id="next-button" type="button" disabled>Next</button>
+            </div>
+          </div>
+
+          <div class="timeline">
+            <input id="step-range" type="range" min="0" max="0" value="0" disabled>
+            <div id="step-label">No trace loaded</div>
+          </div>
+
+          <div class="current">
+            <div>
+              <span class="meta-label">File</span>
+              <strong id="current-file">-</strong>
+            </div>
+            <div>
+              <span class="meta-label">Line</span>
+              <strong id="current-line">-</strong>
+            </div>
+            <div>
+              <span class="meta-label">Function</span>
+              <strong id="current-function">-</strong>
+            </div>
+          </div>
+
+          <div class="code-and-state">
+            <div class="code-panel">
+              <h3>Code</h3>
+              <div id="code-view" class="code-view"></div>
+            </div>
+            <div class="vars-panel">
+              <div>
+                <h3>Locals</h3>
+                <div id="locals-view" class="vars-view empty">No locals</div>
+              </div>
+              <div>
+                <h3>Globals</h3>
+                <div id="globals-view" class="vars-view empty">No globals</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+  </html>
