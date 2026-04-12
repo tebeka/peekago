@@ -1,0 +1,45 @@
+[
+  {
+    "File": "main.go",
+    "Line": 3,
+    "Function": "",
+    "Locals": {},
+    "Globals": {}
+  },
+  {
+    "File": "main.go",
+    "Line": 4,
+    "Function": "",
+    "Locals": {},
+    "Globals": {}
+  },
+  {
+    "File": "main.go",
+    "Line": 5,
+    "Function": "",
+    "Locals": {
+      "a": "1"
+    },
+    "Globals": {}
+  },
+  {
+    "File": "main.go",
+    "Line": 6,
+    "Function": "",
+    "Locals": {
+      "a": "1",
+      "b": "3"
+    },
+    "Globals": {}
+  },
+  {
+    "File": "main.go",
+    "Line": 8,
+    "Function": "",
+    "Locals": {
+      "a": "6",
+      "b": "3"
+    },
+    "Globals": {}
+  }
+]

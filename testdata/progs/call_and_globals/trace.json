@@ -1,0 +1,99 @@
+[
+  {
+    "File": "main.go",
+    "Line": 12,
+    "Function": "",
+    "Locals": {},
+    "Globals": {
+      "total": "1"
+    }
+  },
+  {
+    "File": "main.go",
+    "Line": 13,
+    "Function": "",
+    "Locals": {},
+    "Globals": {
+      "total": "1"
+    }
+  },
+  {
+    "File": "main.go",
+    "Line": 14,
+    "Function": "",
+    "Locals": {
+      "x": "2"
+    },
+    "Globals": {
+      "total": "1"
+    }
+  },
+  {
+    "File": "main.go",
+    "Line": 7,
+    "Function": "",
+    "Locals": {
+      "n": "2"
+    },
+    "Globals": {
+      "total": "1"
+    }
+  },
+  {
+    "File": "main.go",
+    "Line": 8,
+    "Function": "",
+    "Locals": {
+      "n": "2"
+    },
+    "Globals": {
+      "total": "1"
+    }
+  },
+  {
+    "File": "main.go",
+    "Line": 9,
+    "Function": "",
+    "Locals": {
+      "n": "2"
+    },
+    "Globals": {
+      "total": "3"
+    }
+  },
+  {
+    "File": "main.go",
+    "Line": 14,
+    "Function": "",
+    "Locals": {
+      "x": "2"
+    },
+    "Globals": {
+      "total": "3"
+    }
+  },
+  {
+    "File": "main.go",
+    "Line": 15,
+    "Function": "",
+    "Locals": {
+      "x": "2",
+      "y": "3"
+    },
+    "Globals": {
+      "total": "3"
+    }
+  },
+  {
+    "File": "main.go",
+    "Line": 16,
+    "Function": "",
+    "Locals": {
+      "x": "2",
+      "y": "3"
+    },
+    "Globals": {
+      "total": "3"
+    }
+  }
+]
