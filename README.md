@@ -116,3 +116,5 @@ go test ./...
 - The current implementation traces a single linear execution timeline.
 - It is intended for small runnable programs.
 - The web UI uses plain JavaScript and no frontend framework.
+- The embedded editor is CodeMirror 5, vendored under `static/vendor/codemirror`.
+- CodeMirror 5 is MIT-licensed; its license text is included in `static/vendor/codemirror/LICENSE`.

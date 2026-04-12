@@ -3,97 +3,340 @@
     "File": "main.go",
     "Line": 12,
     "Function": "",
-    "Locals": {},
-    "Globals": {
-      "total": "1"
-    }
+    "Frames": [
+      {
+        "ID": "frame:global",
+        "Name": "Global frame",
+        "Kind": "global",
+        "Bindings": [
+          {
+            "Name": "total",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "1"
+            }
+          }
+        ],
+        "IsCurrent": false
+      },
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 13,
     "Function": "",
-    "Locals": {},
-    "Globals": {
-      "total": "1"
-    }
+    "Frames": [
+      {
+        "ID": "frame:global",
+        "Name": "Global frame",
+        "Kind": "global",
+        "Bindings": [
+          {
+            "Name": "total",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "1"
+            }
+          }
+        ],
+        "IsCurrent": false
+      },
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 14,
     "Function": "",
-    "Locals": {
-      "x": "2"
-    },
-    "Globals": {
-      "total": "1"
-    }
+    "Frames": [
+      {
+        "ID": "frame:global",
+        "Name": "Global frame",
+        "Kind": "global",
+        "Bindings": [
+          {
+            "Name": "total",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "1"
+            }
+          }
+        ],
+        "IsCurrent": false
+      },
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "x",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "2"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 7,
     "Function": "",
-    "Locals": {
-      "n": "2"
-    },
-    "Globals": {
-      "total": "1"
-    }
+    "Frames": [
+      {
+        "ID": "frame:global",
+        "Name": "Global frame",
+        "Kind": "global",
+        "Bindings": [
+          {
+            "Name": "total",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "1"
+            }
+          }
+        ],
+        "IsCurrent": false
+      },
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "n",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "2"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 8,
     "Function": "",
-    "Locals": {
-      "n": "2"
-    },
-    "Globals": {
-      "total": "1"
-    }
+    "Frames": [
+      {
+        "ID": "frame:global",
+        "Name": "Global frame",
+        "Kind": "global",
+        "Bindings": [
+          {
+            "Name": "total",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "1"
+            }
+          }
+        ],
+        "IsCurrent": false
+      },
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "n",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "2"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 9,
     "Function": "",
-    "Locals": {
-      "n": "2"
-    },
-    "Globals": {
-      "total": "3"
-    }
+    "Frames": [
+      {
+        "ID": "frame:global",
+        "Name": "Global frame",
+        "Kind": "global",
+        "Bindings": [
+          {
+            "Name": "total",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "3"
+            }
+          }
+        ],
+        "IsCurrent": false
+      },
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "n",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "2"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 14,
     "Function": "",
-    "Locals": {
-      "x": "2"
-    },
-    "Globals": {
-      "total": "3"
-    }
+    "Frames": [
+      {
+        "ID": "frame:global",
+        "Name": "Global frame",
+        "Kind": "global",
+        "Bindings": [
+          {
+            "Name": "total",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "3"
+            }
+          }
+        ],
+        "IsCurrent": false
+      },
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "x",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "2"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 15,
     "Function": "",
-    "Locals": {
-      "x": "2",
-      "y": "3"
-    },
-    "Globals": {
-      "total": "3"
-    }
+    "Frames": [
+      {
+        "ID": "frame:global",
+        "Name": "Global frame",
+        "Kind": "global",
+        "Bindings": [
+          {
+            "Name": "total",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "3"
+            }
+          }
+        ],
+        "IsCurrent": false
+      },
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "x",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "2"
+            }
+          },
+          {
+            "Name": "y",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "3"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 16,
     "Function": "",
-    "Locals": {
-      "x": "2",
-      "y": "3"
-    },
-    "Globals": {
-      "total": "3"
-    }
+    "Frames": [
+      {
+        "ID": "frame:global",
+        "Name": "Global frame",
+        "Kind": "global",
+        "Bindings": [
+          {
+            "Name": "total",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "3"
+            }
+          }
+        ],
+        "IsCurrent": false
+      },
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "x",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "2"
+            }
+          },
+          {
+            "Name": "y",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "3"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   }
 ]

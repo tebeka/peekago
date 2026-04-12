@@ -1,0 +1,347 @@
+[
+  {
+    "File": "main.go",
+    "Line": 5,
+    "Function": "",
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
+  },
+  {
+    "File": "main.go",
+    "Line": 6,
+    "Function": "",
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
+  },
+  {
+    "File": "main.go",
+    "Line": 7,
+    "Function": "",
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "a",
+            "Value": {
+              "Kind": "object",
+              "Display": "[]int len=3 cap=3",
+              "ObjectID": "slice:frame:0.a"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": [
+      {
+        "ID": "array:1",
+        "Kind": "array",
+        "Type": "backing array",
+        "Label": "backing array (3 values)",
+        "Elements": [
+          {
+            "Kind": "scalar",
+            "Display": "1"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "2"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "3"
+          }
+        ]
+      },
+      {
+        "ID": "slice:frame:0.a",
+        "Kind": "slice",
+        "Type": "[]int",
+        "Label": "[]int len=3 cap=3",
+        "Len": 3,
+        "Cap": 3,
+        "BackingObjectID": "array:1"
+      }
+    ]
+  },
+  {
+    "File": "main.go",
+    "Line": 8,
+    "Function": "",
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "a",
+            "Value": {
+              "Kind": "object",
+              "Display": "[]int len=3 cap=3",
+              "ObjectID": "slice:frame:0.a"
+            }
+          },
+          {
+            "Name": "b",
+            "Value": {
+              "Kind": "object",
+              "Display": "[]int len=3 cap=3",
+              "ObjectID": "slice:frame:0.b"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": [
+      {
+        "ID": "array:1",
+        "Kind": "array",
+        "Type": "backing array",
+        "Label": "backing array (3 values)",
+        "Elements": [
+          {
+            "Kind": "scalar",
+            "Display": "1"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "2"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "3"
+          }
+        ]
+      },
+      {
+        "ID": "slice:frame:0.a",
+        "Kind": "slice",
+        "Type": "[]int",
+        "Label": "[]int len=3 cap=3",
+        "Len": 3,
+        "Cap": 3,
+        "BackingObjectID": "array:1"
+      },
+      {
+        "ID": "slice:frame:0.b",
+        "Kind": "slice",
+        "Type": "[]int",
+        "Label": "[]int len=3 cap=3",
+        "Len": 3,
+        "Cap": 3,
+        "BackingObjectID": "array:1"
+      }
+    ]
+  },
+  {
+    "File": "main.go",
+    "Line": 9,
+    "Function": "",
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "a",
+            "Value": {
+              "Kind": "object",
+              "Display": "[]int len=4 cap=6",
+              "ObjectID": "slice:frame:0.a"
+            }
+          },
+          {
+            "Name": "b",
+            "Value": {
+              "Kind": "object",
+              "Display": "[]int len=3 cap=3",
+              "ObjectID": "slice:frame:0.b"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": [
+      {
+        "ID": "array:2",
+        "Kind": "array",
+        "Type": "backing array",
+        "Label": "backing array (4 values)",
+        "Elements": [
+          {
+            "Kind": "scalar",
+            "Display": "1"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "2"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "3"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "4"
+          }
+        ]
+      },
+      {
+        "ID": "slice:frame:0.a",
+        "Kind": "slice",
+        "Type": "[]int",
+        "Label": "[]int len=4 cap=6",
+        "Len": 4,
+        "Cap": 6,
+        "BackingObjectID": "array:2"
+      },
+      {
+        "ID": "array:1",
+        "Kind": "array",
+        "Type": "backing array",
+        "Label": "backing array (3 values)",
+        "Elements": [
+          {
+            "Kind": "scalar",
+            "Display": "1"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "2"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "3"
+          }
+        ]
+      },
+      {
+        "ID": "slice:frame:0.b",
+        "Kind": "slice",
+        "Type": "[]int",
+        "Label": "[]int len=3 cap=3",
+        "Len": 3,
+        "Cap": 3,
+        "BackingObjectID": "array:1"
+      }
+    ]
+  },
+  {
+    "File": "main.go",
+    "Line": 10,
+    "Function": "",
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "a",
+            "Value": {
+              "Kind": "object",
+              "Display": "[]int len=4 cap=6",
+              "ObjectID": "slice:frame:0.a"
+            }
+          },
+          {
+            "Name": "b",
+            "Value": {
+              "Kind": "object",
+              "Display": "[]int len=3 cap=3",
+              "ObjectID": "slice:frame:0.b"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": [
+      {
+        "ID": "array:2",
+        "Kind": "array",
+        "Type": "backing array",
+        "Label": "backing array (4 values)",
+        "Elements": [
+          {
+            "Kind": "scalar",
+            "Display": "1"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "2"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "3"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "4"
+          }
+        ]
+      },
+      {
+        "ID": "slice:frame:0.a",
+        "Kind": "slice",
+        "Type": "[]int",
+        "Label": "[]int len=4 cap=6",
+        "Len": 4,
+        "Cap": 6,
+        "BackingObjectID": "array:2"
+      },
+      {
+        "ID": "array:1",
+        "Kind": "array",
+        "Type": "backing array",
+        "Label": "backing array (3 values)",
+        "Elements": [
+          {
+            "Kind": "scalar",
+            "Display": "1"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "2"
+          },
+          {
+            "Kind": "scalar",
+            "Display": "3"
+          }
+        ]
+      },
+      {
+        "ID": "slice:frame:0.b",
+        "Kind": "slice",
+        "Type": "[]int",
+        "Label": "[]int len=3 cap=3",
+        "Len": 3,
+        "Cap": 3,
+        "BackingObjectID": "array:1"
+      }
+    ]
+  }
+]

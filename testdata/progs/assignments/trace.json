@@ -3,43 +3,113 @@
     "File": "main.go",
     "Line": 3,
     "Function": "",
-    "Locals": {},
-    "Globals": {}
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 4,
     "Function": "",
-    "Locals": {},
-    "Globals": {}
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 5,
     "Function": "",
-    "Locals": {
-      "a": "1"
-    },
-    "Globals": {}
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "a",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "1"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 6,
     "Function": "",
-    "Locals": {
-      "a": "1",
-      "b": "3"
-    },
-    "Globals": {}
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "a",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "1"
+            }
+          },
+          {
+            "Name": "b",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "3"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   },
   {
     "File": "main.go",
     "Line": 8,
     "Function": "",
-    "Locals": {
-      "a": "6",
-      "b": "3"
-    },
-    "Globals": {}
+    "Frames": [
+      {
+        "ID": "frame:0",
+        "Name": "frame 0",
+        "Kind": "stack",
+        "Bindings": [
+          {
+            "Name": "a",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "6"
+            }
+          },
+          {
+            "Name": "b",
+            "Value": {
+              "Kind": "scalar",
+              "Display": "3"
+            }
+          }
+        ],
+        "IsCurrent": true
+      }
+    ],
+    "Objects": []
   }
 ]

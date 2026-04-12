@@ -28,6 +28,24 @@ func TestServerRoutesIndex(t *testing.T) {
 	}
 }
 
+func TestServerRoutesViewer(t *testing.T) {
+	srv := newServer(func(context.Context, string) ([]Step, error) {
+		return nil, nil
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/viewer.html", nil)
+	rec := httptest.NewRecorder()
+	srv.routes().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
+
+	if !strings.Contains(rec.Body.String(), "Step through the trace.") {
+		t.Fatalf("body %q does not contain viewer header", rec.Body.String())
+	}
+}
+
 func TestServerTraceSuccess(t *testing.T) {
 	srv := newServer(func(context.Context, string) ([]Step, error) {
 		return []Step{{File: "main.go", Line: 3}}, nil

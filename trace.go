@@ -25,8 +25,46 @@ type Step struct {
 	File     string
 	Line     int
 	Function string
-	Locals   map[string]string
-	Globals  map[string]string
+	Frames   []Frame
+	Objects  []Object
+}
+
+type Frame struct {
+	ID        string
+	Name      string
+	Kind      string
+	Bindings  []Binding
+	IsCurrent bool
+}
+
+type Binding struct {
+	Name  string
+	Value Value
+}
+
+type Value struct {
+	Kind     string
+	Display  string
+	ObjectID string `json:",omitempty"`
+}
+
+type Object struct {
+	ID              string
+	Kind            string
+	Type            string     `json:",omitempty"`
+	Label           string     `json:",omitempty"`
+	Len             int64      `json:",omitempty"`
+	Cap             int64      `json:",omitempty"`
+	BackingObjectID string     `json:",omitempty"`
+	Elements        []Value    `json:",omitempty"`
+	Fields          []Binding  `json:",omitempty"`
+	Entries         []MapEntry `json:",omitempty"`
+	Target          *Value     `json:",omitempty"`
+}
+
+type MapEntry struct {
+	Key   Value
+	Value Value
 }
 
 func TraceFile(ctx context.Context, name string) ([]Step, error) {
@@ -97,8 +135,9 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 	}
 
 	var (
-		steps     []Step
-		seenState string
+		steps      []Step
+		seenState  string
+		identities = newTraceIdentities()
 	)
 
 	for range defaultStepLimit {
@@ -115,7 +154,7 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 			return steps, exitedError(state)
 		}
 
-		step, ok, err := snapshot(ctx, client, state)
+		step, ok, err := snapshot(ctx, client, state, identities)
 		if err != nil {
 			return steps, err
 		}
