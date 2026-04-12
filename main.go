@@ -4,8 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -15,8 +15,17 @@ import (
 	"time"
 )
 
+var options struct {
+	addr string
+}
+
+func validateAddr(addr string) error {
+	_, err := net.ResolveTCPAddr("tcp", options.addr)
+	return err
+}
+
 func main() {
-	listenAddr := flag.String("listen", ":8080", "HTTP listen address")
+	flag.StringVar(&options.addr, "http", ":8080", "HTTP listen address")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [flags]\n\n", path.Base(os.Args[0]))
 		fmt.Fprintln(os.Stderr, "Start the Peek-A-Go web server.")
@@ -31,6 +40,11 @@ func main() {
 		os.Exit(2)
 	}
 
+	if err := validateAddr(options.addr); err != nil {
+		fmt.Fprintf(os.Stderr, "error: invalid -http address %q: %s\n", options.addr, err)
+		os.Exit(2)
+	}
+
 	if _, err := exec.LookPath("dlv"); err != nil {
 		fmt.Fprintf(os.Stderr, "error: `dlv` executable not found.\n")
 		os.Exit(1)
@@ -38,7 +52,7 @@ func main() {
 
 	server := newServer(TraceSource)
 	httpServer := &http.Server{
-		Addr:    *listenAddr,
+		Addr:    options.addr,
 		Handler: server.routes(),
 	}
 
@@ -56,7 +70,7 @@ func main() {
 		}
 	}()
 
-	log.Printf("listening on %s", *listenAddr)
+	slog.Info("server starting", "address", options.addr)
 	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
