@@ -475,8 +475,55 @@ button:disabled {
   }
 }
 
+.slice-diagram-container {
+   margin: 12px 0;
+   padding: 14px;
+   background: rgba(20, 33, 61, 0.04);
+   border-radius: 12px;
+   overflow-x: auto;
+}
+
+.slice-diagram-svg {
+   display: block;
+   max-width: 100%;
+   height: auto;
+   min-height: 120px;
+}
+
+.diagram-var-name {
+   font-weight: 700;
+   font-size: 14px;
+   fill: var(--ink);
+}
+
+.diagram-arrow-line {
+   stroke: var(--ink);
+   stroke-width: 2;
+}
+
+.diagram-arrowhead {
+   fill: var(--ink);
+}
+
+.diagram-element {
+   stroke: var(--ink);
+   stroke-width: 2;
+   fill: #fff;
+}
+
+.diagram-element-text {
+   font-size: 12px;
+   font-weight: 600;
+   fill: var(--ink);
+}
+
+.diagram-metadata {
+   font-size: 12px;
+   fill: var(--muted);
+}
+
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+   to {
+     transform: rotate(360deg);
+   }
 }

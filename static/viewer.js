@@ -82,25 +82,26 @@ function syncControls() {
 }
 
 function renderStep() {
-  if (!viewerState.steps.length) {
-    viewerElements.stepLabel.textContent = 'No trace loaded';
-    viewerElements.currentFile.textContent = '-';
-    viewerElements.currentLine.textContent = '-';
-    viewerElements.currentFunction.textContent = '-';
-    renderFrames([]);
-    renderObjects([]);
-    highlightEditorLine(0);
-    return;
-  }
+   if (!viewerState.steps.length) {
+     viewerElements.stepLabel.textContent = 'No trace loaded';
+     viewerElements.currentFile.textContent = '-';
+     viewerElements.currentLine.textContent = '-';
+     viewerElements.currentFunction.textContent = '-';
+     renderFrames([]);
+     renderObjects([]);
+     highlightEditorLine(0);
+     return;
+   }
 
-  const step = viewerState.steps[viewerState.index];
-  viewerElements.stepLabel.textContent = `Step ${viewerState.index + 1} / ${viewerState.steps.length}`;
-  viewerElements.currentFile.textContent = step.File || '-';
-  viewerElements.currentLine.textContent = step.Line || '-';
-  viewerElements.currentFunction.textContent = step.Function || 'main';
-  renderFrames(step.Frames || []);
-  renderObjects(step.Objects || []);
-  highlightEditorLine(step.Line);
+   const step = viewerState.steps[viewerState.index];
+   viewerElements.stepLabel.textContent = `Step ${viewerState.index + 1} / ${viewerState.steps.length}`;
+   viewerElements.currentFile.textContent = step.File || '-';
+   viewerElements.currentLine.textContent = step.Line || '-';
+   viewerElements.currentFunction.textContent = step.Function || 'main';
+   const objectsById = buildObjectIndex(step.Objects || []);
+   renderFrames(step.Frames || [], objectsById);
+   renderObjects(step.Objects || []);
+   highlightEditorLine(step.Line);
 }
 
 function highlightEditorLine(lineNumber) {
@@ -117,35 +118,43 @@ function highlightEditorLine(lineNumber) {
   viewerEditor.scrollIntoView({ line: Math.max(lineNumber - 1, 0), ch: 0 }, 120);
 }
 
-function renderFrames(frames) {
-  viewerElements.framesView.innerHTML = '';
+function buildObjectIndex(objects) {
+   const index = {};
+   (objects || []).forEach((obj) => {
+     index[obj.ID] = obj;
+   });
+   return index;
+}
 
-  if (!frames.length) {
-    viewerElements.framesView.className = 'stack-view empty';
-    viewerElements.framesView.textContent = 'No frames';
-    return;
-  }
+function renderFrames(frames, objectsById) {
+   viewerElements.framesView.innerHTML = '';
 
-  viewerElements.framesView.className = 'stack-view';
-  frames.forEach((frame) => {
-    const card = document.createElement('section');
-    card.className = 'frame-card';
-    if (frame.IsCurrent) {
-      card.classList.add('current-frame');
-    }
+   if (!frames.length) {
+     viewerElements.framesView.className = 'stack-view empty';
+     viewerElements.framesView.textContent = 'No frames';
+     return;
+   }
 
-    const title = document.createElement('div');
-    title.className = 'frame-title';
-    title.textContent = frame.Name || frame.Kind;
+   viewerElements.framesView.className = 'stack-view';
+   frames.forEach((frame) => {
+     const card = document.createElement('section');
+     card.className = 'frame-card';
+     if (frame.IsCurrent) {
+       card.classList.add('current-frame');
+     }
 
-    const kind = document.createElement('div');
-    kind.className = 'frame-kind';
-    kind.textContent = frame.Kind;
+     const title = document.createElement('div');
+     title.className = 'frame-title';
+     title.textContent = frame.Name || frame.Kind;
 
-    const bindings = renderBindingList(frame.Bindings || [], 'No bindings');
-    card.append(title, kind, bindings);
-    viewerElements.framesView.appendChild(card);
-  });
+     const kind = document.createElement('div');
+     kind.className = 'frame-kind';
+     kind.textContent = frame.Kind;
+
+     const bindings = renderBindingList(frame.Bindings || [], 'No bindings', objectsById);
+     card.append(title, kind, bindings);
+     viewerElements.framesView.appendChild(card);
+   });
 }
 
 function renderObjects(objects) {
@@ -231,35 +240,186 @@ function renderObjectBody(container, object) {
   container.appendChild(empty);
 }
 
-function renderBindingList(bindings, emptyText) {
-  const list = document.createElement('div');
-  list.className = 'binding-list';
+function renderSliceDiagram(sliceBindings, objectsById) {
+   const container = document.createElement('div');
+   container.className = 'slice-diagram-container';
 
-  if (!bindings.length) {
-    const empty = document.createElement('div');
-    empty.className = 'empty';
-    empty.textContent = emptyText;
-    list.appendChild(empty);
-    return list;
-  }
+   // Collect unique backing arrays and track which vars point to them
+   const backingArrays = new Map(); // ID -> { obj, vars: [names] }
+   const varToArray = new Map(); // var name -> array ID
+   
+   sliceBindings.forEach((binding) => {
+     const sliceObj = objectsById[binding.Value.ObjectID];
+     if (sliceObj && sliceObj.BackingObjectID) {
+       const arrayID = sliceObj.BackingObjectID;
+       if (!backingArrays.has(arrayID)) {
+         const arrayObj = objectsById[arrayID];
+         backingArrays.set(arrayID, { obj: arrayObj, vars: [] });
+       }
+       backingArrays.get(arrayID).vars.push(binding.Name);
+       varToArray.set(binding.Name, arrayID);
+     }
+   });
 
-  bindings.forEach((binding) => {
-    const row = document.createElement('div');
-    row.className = 'binding-row';
+   // Calculate dimensions
+   const varLabelWidth = 50;
+   const elementWidth = 40;
+   const elementHeight = 40;
+   const arrowHeadSize = 8;
+   const labelGap = 15;
+   const arrayLabelGap = 60;
+   const arrayRowHeight = 80;
+   const spacing = 15;
 
-    const key = document.createElement('span');
-    key.className = 'binding-name';
-    key.textContent = binding.Name;
+   // Max elements to display
+   const maxElements = Math.max(...Array.from(backingArrays.values()).map(d => d.obj?.Elements?.length || 0));
+   const arrayContentWidth = maxElements * elementWidth + spacing * 2;
+   const diagramWidth = varLabelWidth + labelGap + 30 + arrayContentWidth + spacing;
+   const diagramHeight = sliceBindings.length * 25 + backingArrays.size * arrayRowHeight + 60;
 
-    const value = document.createElement('div');
-    value.className = 'binding-value';
-    value.appendChild(renderValue(binding.Value));
+   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+   svg.setAttribute('class', 'slice-diagram-svg');
+   svg.setAttribute('viewBox', `0 0 ${diagramWidth} ${diagramHeight}`);
+   svg.setAttribute('preserveAspectRatio', 'xMinYMin meet');
 
-    row.append(key, value);
-    list.appendChild(row);
-  });
+   let varYPos = 30;
+   const arrayPositions = new Map(); // arrayID -> yPosition
 
-  return list;
+   // Draw variable labels and arrows
+   Array.from(varToArray.entries()).forEach(([varName, arrayID]) => {
+     const varX = 10;
+     const varY = varYPos;
+     const arrowStartX = varLabelWidth;
+     const arrayStartX = varLabelWidth + labelGap + 30;
+
+     // Variable name
+     const varText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+     varText.setAttribute('x', varX);
+     varText.setAttribute('y', varY + 5);
+     varText.setAttribute('class', 'diagram-var-name');
+     varText.textContent = varName;
+     svg.appendChild(varText);
+
+     // Get array position (compute if first time seeing this array)
+     if (!arrayPositions.has(arrayID)) {
+       arrayPositions.set(arrayID, Math.max(...Array.from(arrayPositions.values() || [30])) + arrayRowHeight);
+     }
+     const arrayY = arrayPositions.get(arrayID);
+     const arrowY = varY + 2;
+
+     // Arrow line from var to array
+     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+     line.setAttribute('x1', arrowStartX);
+     line.setAttribute('y1', arrowY);
+     line.setAttribute('x2', arrayStartX - arrowHeadSize - 5);
+     line.setAttribute('y2', arrowY);
+     line.setAttribute('class', 'diagram-arrow-line');
+     svg.appendChild(line);
+
+     // Arrowhead
+     const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+     polygon.setAttribute('points', `${arrayStartX - arrowHeadSize - 5},${arrowY - 3} ${arrayStartX},${arrowY} ${arrayStartX - arrowHeadSize - 5},${arrowY + 3}`);
+     polygon.setAttribute('class', 'diagram-arrowhead');
+     svg.appendChild(polygon);
+
+     varYPos += 25;
+   });
+
+   // Draw arrays
+   backingArrays.forEach((arrayData, arrayID) => {
+     const { obj } = arrayData;
+     const elements = obj?.Elements || [];
+     const arrayY = arrayPositions.get(arrayID);
+     const arrayStartX = varLabelWidth + labelGap + 30;
+
+     // Array elements
+     elements.forEach((elem, idx) => {
+       const elemX = arrayStartX + spacing + idx * elementWidth;
+       const elemY = arrayY;
+
+       const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+       rect.setAttribute('x', elemX);
+       rect.setAttribute('y', elemY);
+       rect.setAttribute('width', elementWidth - 4);
+       rect.setAttribute('height', elementHeight);
+       rect.setAttribute('class', 'diagram-element');
+       svg.appendChild(rect);
+
+       const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+       text.setAttribute('x', elemX + (elementWidth - 4) / 2);
+       text.setAttribute('y', elemY + elementHeight / 2 + 5);
+       text.setAttribute('class', 'diagram-element-text');
+       text.setAttribute('text-anchor', 'middle');
+       text.textContent = elem.Display || '?';
+       svg.appendChild(text);
+     });
+
+     // Array metadata (len, cap)
+     const firstVar = arrayData.vars[0];
+     const sliceObj = objectsById[sliceBindings.find(b => b.Name === firstVar).Value.ObjectID];
+     
+     const metaX = arrayStartX + spacing;
+     const metaY = arrayY + elementHeight + 20;
+     const metaText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+     metaText.setAttribute('x', metaX);
+     metaText.setAttribute('y', metaY);
+     metaText.setAttribute('class', 'diagram-metadata');
+     metaText.textContent = `len=${sliceObj.Len}, cap=${sliceObj.Cap}`;
+     svg.appendChild(metaText);
+   });
+
+   container.appendChild(svg);
+   return container;
+}
+
+function renderBindingList(bindings, emptyText, objectsById) {
+   const list = document.createElement('div');
+   list.className = 'binding-list';
+
+   if (!bindings.length) {
+     const empty = document.createElement('div');
+     empty.className = 'empty';
+     empty.textContent = emptyText;
+     list.appendChild(empty);
+     return list;
+   }
+
+   // Group bindings by whether they're slices
+   const sliceBindings = [];
+   const otherBindings = [];
+   
+   bindings.forEach((binding) => {
+     const obj = objectsById[binding.Value.ObjectID];
+     if (obj && obj.Kind === 'slice') {
+       sliceBindings.push(binding);
+     } else {
+       otherBindings.push(binding);
+     }
+   });
+
+   // Render slice diagram if there are slices
+   if (sliceBindings.length > 0) {
+     list.appendChild(renderSliceDiagram(sliceBindings, objectsById));
+   }
+
+   // Render other bindings normally
+   otherBindings.forEach((binding) => {
+     const row = document.createElement('div');
+     row.className = 'binding-row';
+
+     const key = document.createElement('span');
+     key.className = 'binding-name';
+     key.textContent = binding.Name;
+
+     const value = document.createElement('div');
+     value.className = 'binding-value';
+     value.appendChild(renderValueWithChain(binding.Value, objectsById || {}));
+
+     row.append(key, value);
+     list.appendChild(row);
+   });
+
+   return list;
 }
 
 function renderValueList(values) {
@@ -292,16 +452,47 @@ function renderMetaRow(label, valueNode) {
   return row;
 }
 
+function renderValueWithChain(value, objectsById) {
+   if (!value) {
+     return renderInlineText('nil');
+   }
+
+   // For pointer-like types, show the chain: var -> object -> target
+   if (value.Kind === 'object' && value.ObjectID) {
+     const obj = objectsById[value.ObjectID];
+     const container = document.createElement('span');
+
+     // Render the immediate object reference
+     container.appendChild(renderObjectRef(value.ObjectID, value.Display || value.ObjectID));
+
+     // For slices, show the backing array
+     if (obj && obj.Kind === 'slice' && obj.BackingObjectID) {
+       container.appendChild(document.createTextNode(' → '));
+       container.appendChild(renderObjectRef(obj.BackingObjectID, 'backing'));
+     }
+
+     // For pointers and interfaces, show the target
+     if (obj && (obj.Kind === 'pointer' || obj.Kind === 'interface') && obj.Target) {
+       container.appendChild(document.createTextNode(' → '));
+       container.appendChild(renderValue(obj.Target));
+     }
+
+     return container;
+   }
+
+   return renderInlineText(value.Display || value.Kind || 'value');
+}
+
 function renderValue(value) {
-  if (!value) {
-    return renderInlineText('nil');
-  }
+   if (!value) {
+     return renderInlineText('nil');
+   }
 
-  if (value.Kind === 'object' && value.ObjectID) {
-    return renderObjectRef(value.ObjectID, value.Display || value.ObjectID);
-  }
+   if (value.Kind === 'object' && value.ObjectID) {
+     return renderObjectRef(value.ObjectID, value.Display || value.ObjectID);
+   }
 
-  return renderInlineText(value.Display || value.Kind || 'value');
+   return renderInlineText(value.Display || value.Kind || 'value');
 }
 
 function renderInlineText(text) {

@@ -20,7 +20,7 @@ var options struct {
 }
 
 func validateAddr(addr string) error {
-	_, err := net.ResolveTCPAddr("tcp", options.addr)
+	_, err := net.ResolveTCPAddr("tcp", addr)
 	return err
 }
 

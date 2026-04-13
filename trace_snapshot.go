@@ -423,7 +423,7 @@ func (g *graphBuilder) sliceValue(variable variable, path string) Value {
 }
 
 func (g *graphBuilder) arrayValue(variable variable, path string, preferPathID bool) Value {
-	objectID := objectIDForVariable("array", variable, path, preferPathID)
+	objectID := g.objectIDForVariable("array", variable, path, preferPathID)
 	g.addObject(Object{
 		ID:       objectID,
 		Kind:     "array",
@@ -440,7 +440,7 @@ func (g *graphBuilder) arrayValue(variable variable, path string, preferPathID b
 }
 
 func (g *graphBuilder) structValue(variable variable, path string, preferPathID bool) Value {
-	objectID := objectIDForVariable("struct", variable, path, preferPathID)
+	objectID := g.objectIDForVariable("struct", variable, path, preferPathID)
 	fields := make([]Binding, 0, len(variable.Children))
 	for index, child := range variable.Children {
 		name := strings.TrimSpace(child.Name)
@@ -470,7 +470,7 @@ func (g *graphBuilder) structValue(variable variable, path string, preferPathID 
 }
 
 func (g *graphBuilder) mapValue(variable variable, path string, preferPathID bool) Value {
-	objectID := objectIDForVariable("map", variable, path, preferPathID)
+	objectID := g.objectIDForVariable("map", variable, path, preferPathID)
 	entries := make([]MapEntry, 0, len(variable.Children)/2)
 	for i := 0; i+1 < len(variable.Children); i += 2 {
 		entries = append(entries, MapEntry{
@@ -495,7 +495,7 @@ func (g *graphBuilder) mapValue(variable variable, path string, preferPathID boo
 }
 
 func (g *graphBuilder) pointerValue(variable variable, path string, preferPathID bool) Value {
-	objectID := objectIDForVariable("pointer", variable, path, preferPathID)
+	objectID := g.objectIDForVariable("pointer", variable, path, preferPathID)
 	var target *Value
 	if len(variable.Children) > 0 {
 		value := g.valueForVariable(variable.Children[0], path+".target", false)
@@ -518,7 +518,7 @@ func (g *graphBuilder) pointerValue(variable variable, path string, preferPathID
 }
 
 func (g *graphBuilder) interfaceValue(variable variable, path string, preferPathID bool) Value {
-	objectID := objectIDForVariable("interface", variable, path, preferPathID)
+	objectID := g.objectIDForVariable("interface", variable, path, preferPathID)
 	var target *Value
 	if len(variable.Children) > 0 {
 		value := g.valueForVariable(variable.Children[0], path+".value", false)
@@ -549,9 +549,9 @@ func (g *graphBuilder) elementValues(children []variable, path string) []Value {
 	return values
 }
 
-func objectIDForVariable(kind string, variable variable, path string, preferPathID bool) string {
+func (g *graphBuilder) objectIDForVariable(kind string, variable variable, path string, preferPathID bool) string {
 	if variable.Addr != 0 && !preferPathID {
-		return kind + ":" + path
+		return g.identities.idForAddress(kind, variable.Addr)
 	}
 
 	return kind + ":" + path

@@ -25,17 +25,11 @@
 
 import "fmt"
 
-var total = 1
-
-func add(n int) int {
-	total += n
-	return total
-}
-
 func main() {
-	x := 2
-	y := add(x)
-	fmt.Println(y)
+	a := []int{1, 2, 3}
+	b := a
+	a = append(a, 4)
+	fmt.Println(a, b)
 }</textarea>
           <p id="status" class="status">Ready.</p>
           <div class="compose-actions">
