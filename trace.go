@@ -12,7 +12,7 @@ const (
 	traceModuleName  = "pkgo-trace"
 	defaultStepLimit = 50
 	debugServerWait  = 5
-	commandTimeout   = 5
+	commandTimeout   = 15
 	maxStringLen     = 128
 	maxArrayValues   = 16
 	maxStructFields  = 16

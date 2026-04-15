@@ -50,7 +50,7 @@ func snapshot(ctx context.Context, client *rpcClient, state *debuggerState, prev
 
 	outFrames := []Frame{}
 	for _, frame := range frames {
-		if filepath.Base(frame.Location.File) != traceFileName {
+		if filepath.Base(frame.File) != traceFileName {
 			continue
 		}
 
@@ -68,7 +68,7 @@ func snapshot(ctx context.Context, client *rpcClient, state *debuggerState, prev
 		}
 
 		outFrames = append(outFrames, Frame{
-			Func:   functionName(frame.Location.Function),
+			Func:   functionName(frame.Function),
 			Locals: locals,
 		})
 	}

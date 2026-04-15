@@ -3,9 +3,12 @@
     "File": "main.go",
     "Line": 3,
     "PrevLine": 0,
-    "Function": "",
+    "Function": "main.main",
     "Frames": [
-      {"Func": "", "Locals": {}}
+      {
+        "Func": "main.main",
+        "Locals": {}
+      }
     ],
     "Globals": {},
     "Heap": {}
@@ -14,9 +17,12 @@
     "File": "main.go",
     "Line": 4,
     "PrevLine": 3,
-    "Function": "",
+    "Function": "main.main",
     "Frames": [
-      {"Func": "", "Locals": {}}
+      {
+        "Func": "main.main",
+        "Locals": {}
+      }
     ],
     "Globals": {},
     "Heap": {}
@@ -25,11 +31,18 @@
     "File": "main.go",
     "Line": 5,
     "PrevLine": 4,
-    "Function": "",
+    "Function": "main.main",
     "Frames": [
-      {"Func": "", "Locals": {
-        "a": {"Kind": "prim", "Type": "int", "Prim": "1"}
-      }}
+      {
+        "Func": "main.main",
+        "Locals": {
+          "a": {
+            "Kind": "prim",
+            "Type": "int",
+            "Prim": "1"
+          }
+        }
+      }
     ],
     "Globals": {},
     "Heap": {}
@@ -38,12 +51,23 @@
     "File": "main.go",
     "Line": 6,
     "PrevLine": 5,
-    "Function": "",
+    "Function": "main.main",
     "Frames": [
-      {"Func": "", "Locals": {
-        "a": {"Kind": "prim", "Type": "int", "Prim": "1"},
-        "b": {"Kind": "prim", "Type": "int", "Prim": "3"}
-      }}
+      {
+        "Func": "main.main",
+        "Locals": {
+          "a": {
+            "Kind": "prim",
+            "Type": "int",
+            "Prim": "1"
+          },
+          "b": {
+            "Kind": "prim",
+            "Type": "int",
+            "Prim": "3"
+          }
+        }
+      }
     ],
     "Globals": {},
     "Heap": {}
@@ -52,12 +76,23 @@
     "File": "main.go",
     "Line": 8,
     "PrevLine": 6,
-    "Function": "",
+    "Function": "main.main",
     "Frames": [
-      {"Func": "", "Locals": {
-        "a": {"Kind": "prim", "Type": "int", "Prim": "6"},
-        "b": {"Kind": "prim", "Type": "int", "Prim": "3"}
-      }}
+      {
+        "Func": "main.main",
+        "Locals": {
+          "a": {
+            "Kind": "prim",
+            "Type": "int",
+            "Prim": "6"
+          },
+          "b": {
+            "Kind": "prim",
+            "Type": "int",
+            "Prim": "3"
+          }
+        }
+      }
     ],
     "Globals": {},
     "Heap": {}

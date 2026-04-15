@@ -219,7 +219,9 @@ type breakpoint struct {
 }
 
 type stackFrame struct {
-	Location  location   `json:"Location"`
+	File      string     `json:"File"`
+	Line      int        `json:"Line"`
+	Function  *function  `json:"Function"`
 	Locals    []variable `json:"Locals"`
 	Arguments []variable `json:"Arguments"`
 }
