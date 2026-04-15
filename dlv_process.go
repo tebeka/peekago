@@ -44,16 +44,18 @@ type delveProcess struct {
 	waitErr chan error
 }
 
-func startDelve(ctx context.Context, workDir string, addr string) (*delveProcess, error) {
-	cmd := exec.CommandContext(
-		ctx,
-		"dlv",
+func startDelve(ctx context.Context, workDir, addr, stdoutPath string) (*delveProcess, error) {
+	args := []string{
 		"debug",
 		"--headless",
-		"--listen="+addr,
+		"--listen=" + addr,
 		"--api-version=2",
 		"--accept-multiclient",
-	)
+	}
+	if stdoutPath != "" {
+		args = append(args, "-r", "stdout:"+stdoutPath)
+	}
+	cmd := exec.CommandContext(ctx, "dlv", args...)
 	cmd.Dir = workDir
 	output := &bytes.Buffer{}
 	cmd.Stdout = output

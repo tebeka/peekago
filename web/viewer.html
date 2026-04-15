@@ -26,7 +26,16 @@
   header h1 { margin: 0; font-size: 16px; font-weight: 600; }
   header .subtitle { color: var(--muted); font-size: 13px; }
   main { display: grid; grid-template-columns: 1.1fr 1fr 1fr;
-    gap: 16px; padding: 16px 20px; }
+    gap: 16px; padding: 16px 20px 0; }
+  .output-wrap { padding: 0 20px 16px; }
+  .output-wrap .panel { }
+  pre.stdout { margin: 0; padding: 10px 14px; font-family: var(--mono);
+    font-size: 13px; max-height: 160px; overflow: auto; white-space: pre-wrap;
+    word-break: break-all; background: #fcfcfb; }
+  pre.stdout .cursor { background: #1c2434; color: #fff; padding: 0 2px;
+    border-radius: 2px; }
+  pre.stdout .empty { color: var(--muted); font-style: italic;
+    font-family: -apple-system, sans-serif; }
   .panel { background: var(--panel); border: 1px solid var(--line);
     border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
   .panel h2 { margin: 0; padding: 10px 14px; font-size: 12px;
@@ -118,6 +127,12 @@
     <div id="heap" class="scroll"></div>
   </section>
 </main>
+<div class="output-wrap">
+  <section class="panel">
+    <h2>Stdout</h2>
+    <pre id="stdout" class="stdout"></pre>
+  </section>
+</div>
 <footer>
   <button id="first">&lt;&lt; First</button>
   <button id="prev">&lt; Prev</button>
@@ -130,12 +145,15 @@
 <script>
 const TRACE = {{.Trace}};
 const SOURCE = {{.Source}};
+const OUTPUT = {{.Output}};
 (function () {
   const trace = TRACE;
   const source = SOURCE;
+  const fullOutput = OUTPUT || "";
   const codeEl = document.getElementById("code");
   const framesEl = document.getElementById("frames");
   const heapEl = document.getElementById("heap");
+  const stdoutEl = document.getElementById("stdout");
   const counter = document.getElementById("counter");
   const slider = document.getElementById("slider");
   const btn = {
@@ -285,6 +303,13 @@ const SOURCE = {{.Source}};
           ${renderValue(heap[id], heapIndex)}
         </div>`;
       }).join("");
+    }
+
+    const len = Math.min(step.StdoutLen || 0, fullOutput.length);
+    if (len === 0) {
+      stdoutEl.innerHTML = `<span class="empty">(no output yet)</span>`;
+    } else {
+      stdoutEl.textContent = fullOutput.slice(0, len);
     }
 
     counter.textContent = `Step ${cursor + 1} of ${trace.length}`;

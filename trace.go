@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -22,14 +23,21 @@ const (
 
 var errStepLimit = errors.New("trace step limit reached")
 
+type Trace struct {
+	Source string
+	Steps  []Step
+	Output string
+}
+
 type Step struct {
-	File     string
-	Line     int
-	PrevLine int
-	Function string
-	Frames   []Frame
-	Globals  map[string]Value
-	Heap     map[string]Value
+	File      string
+	Line      int
+	PrevLine  int
+	Function  string
+	Frames    []Frame
+	Globals   map[string]Value
+	Heap      map[string]Value
+	StdoutLen int
 }
 
 type Frame struct {
@@ -57,7 +65,7 @@ type Pair struct {
 	Value Value
 }
 
-func TraceFile(ctx context.Context, name string) ([]Step, error) {
+func TraceFile(ctx context.Context, name string) (*Trace, error) {
 	src, err := os.ReadFile(name)
 	if err != nil {
 		return nil, fmt.Errorf("read %s: %w", name, err)
@@ -66,10 +74,12 @@ func TraceFile(ctx context.Context, name string) ([]Step, error) {
 	return TraceSource(ctx, string(src))
 }
 
-func TraceSource(ctx context.Context, src string) ([]Step, error) {
+func TraceSource(ctx context.Context, src string) (*Trace, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+
+	trace := &Trace{Source: src}
 
 	tmpDir, err := os.MkdirTemp("", "pkgo-trace-*")
 	if err != nil {
@@ -81,12 +91,19 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 		return nil, err
 	}
 
+	stdoutPath := filepath.Join(tmpDir, "stdout.log")
+	if f, err := os.Create(stdoutPath); err != nil {
+		return nil, fmt.Errorf("create stdout log: %w", err)
+	} else {
+		f.Close()
+	}
+
 	addr, err := reserveLoopbackAddress()
 	if err != nil {
 		return nil, err
 	}
 
-	dlv, err := startDelve(ctx, tmpDir, addr)
+	dlv, err := startDelve(ctx, tmpDir, addr, stdoutPath)
 	if err != nil {
 		return nil, err
 	}
@@ -115,17 +132,31 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 		return nil, errors.New("delve returned no debugger state")
 	}
 
+	finalize := func() *Trace {
+		if data, err := os.ReadFile(stdoutPath); err == nil {
+			trace.Output = string(data)
+		}
+		return trace
+	}
+
 	if state.Exited {
-		return nil, exitedError(state)
+		return finalize(), exitedError(state)
 	}
 
 	mainGoroutineID := currentGoroutineID(state)
 	if mainGoroutineID == 0 {
-		return nil, errors.New("delve did not report the selected goroutine")
+		return finalize(), errors.New("delve did not report the selected goroutine")
+	}
+
+	stdoutLen := func() int {
+		info, err := os.Stat(stdoutPath)
+		if err != nil {
+			return 0
+		}
+		return int(info.Size())
 	}
 
 	var (
-		steps     []Step
 		seenState string
 		prevLine  int
 	)
@@ -133,26 +164,27 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 	for range defaultStepLimit {
 		state, err = advanceToUserFrame(ctx, client, state, mainGoroutineID)
 		if err != nil {
-			return steps, err
+			return finalize(), err
 		}
 
 		if state.Exited {
-			if len(steps) > 0 && state.ExitStatus == 0 {
-				return steps, nil
+			if len(trace.Steps) > 0 && state.ExitStatus == 0 {
+				return finalize(), nil
 			}
 
-			return steps, exitedError(state)
+			return finalize(), exitedError(state)
 		}
 
 		step, ok, err := snapshot(ctx, client, state, prevLine)
 		if err != nil {
-			return steps, err
+			return finalize(), err
 		}
 
 		if ok {
+			step.StdoutLen = stdoutLen()
 			fingerprint := stepFingerprint(step)
 			if fingerprint != seenState {
-				steps = append(steps, step)
+				trace.Steps = append(trace.Steps, step)
 				seenState = fingerprint
 				prevLine = step.Line
 			}
@@ -160,9 +192,9 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 
 		state, err = client.command(ctx, debuggerCommand{Name: "step"})
 		if err != nil {
-			return steps, fmt.Errorf("step: %w", err)
+			return finalize(), fmt.Errorf("step: %w", err)
 		}
 	}
 
-	return steps, errStepLimit
+	return finalize(), errStepLimit
 }

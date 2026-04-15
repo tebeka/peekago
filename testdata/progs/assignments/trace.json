@@ -1,100 +1,109 @@
-[
-  {
-    "File": "main.go",
-    "Line": 3,
-    "PrevLine": 0,
-    "Function": "main.main",
-    "Frames": [
-      {
-        "Func": "main.main",
-        "Locals": {}
-      }
-    ],
-    "Globals": {},
-    "Heap": {}
-  },
-  {
-    "File": "main.go",
-    "Line": 4,
-    "PrevLine": 3,
-    "Function": "main.main",
-    "Frames": [
-      {
-        "Func": "main.main",
-        "Locals": {}
-      }
-    ],
-    "Globals": {},
-    "Heap": {}
-  },
-  {
-    "File": "main.go",
-    "Line": 5,
-    "PrevLine": 4,
-    "Function": "main.main",
-    "Frames": [
-      {
-        "Func": "main.main",
-        "Locals": {
-          "a": {
-            "Kind": "prim",
-            "Type": "int",
-            "Prim": "1"
+{
+  "Source": "package main\n\nfunc main() {\n\ta := 1\n\tb := a + 2\n\ta = b + 3\n\t_ = a\n}\n",
+  "Steps": [
+    {
+      "File": "main.go",
+      "Line": 3,
+      "PrevLine": 0,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 4,
+      "PrevLine": 3,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 5,
+      "PrevLine": 4,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "a": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            }
           }
         }
-      }
-    ],
-    "Globals": {},
-    "Heap": {}
-  },
-  {
-    "File": "main.go",
-    "Line": 6,
-    "PrevLine": 5,
-    "Function": "main.main",
-    "Frames": [
-      {
-        "Func": "main.main",
-        "Locals": {
-          "a": {
-            "Kind": "prim",
-            "Type": "int",
-            "Prim": "1"
-          },
-          "b": {
-            "Kind": "prim",
-            "Type": "int",
-            "Prim": "3"
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 6,
+      "PrevLine": 5,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "a": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            },
+            "b": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
           }
         }
-      }
-    ],
-    "Globals": {},
-    "Heap": {}
-  },
-  {
-    "File": "main.go",
-    "Line": 8,
-    "PrevLine": 6,
-    "Function": "main.main",
-    "Frames": [
-      {
-        "Func": "main.main",
-        "Locals": {
-          "a": {
-            "Kind": "prim",
-            "Type": "int",
-            "Prim": "6"
-          },
-          "b": {
-            "Kind": "prim",
-            "Type": "int",
-            "Prim": "3"
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 8,
+      "PrevLine": 6,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "a": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "6"
+            },
+            "b": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
           }
         }
-      }
-    ],
-    "Globals": {},
-    "Heap": {}
-  }
-]
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    }
+  ],
+  "Output": ""
+}

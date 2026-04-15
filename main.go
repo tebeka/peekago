@@ -28,19 +28,13 @@ func main() {
 
 	sourcePath := flag.Arg(0)
 
-	steps, err := TraceFile(context.Background(), sourcePath)
+	trace, err := TraceFile(context.Background(), sourcePath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
 
 	if *htmlOut != "" {
-		src, err := os.ReadFile(sourcePath)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-
 		out, err := os.Create(*htmlOut)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -48,7 +42,7 @@ func main() {
 		}
 		defer out.Close()
 
-		if err := RenderHTML(out, sourcePath, string(src), steps); err != nil {
+		if err := RenderHTML(out, sourcePath, trace); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
@@ -57,7 +51,7 @@ func main() {
 
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(steps); err != nil {
+	if err := encoder.Encode(trace); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}

@@ -49,22 +49,25 @@ func TestRenderHTMLHeapDemo(t *testing.T) {
 		return Value{Kind: "ref", Type: nodeType, Ref: id}
 	}
 
-	steps := []Step{
-		{
-			File: "main.go", Line: 11, PrevLine: 10, Function: "main.main",
-			Frames: []Frame{{Func: "main.main", Locals: map[string]Value{
-				"a":    ref("0xa"),
-				"b":    ref("0xb"),
-				"c":    ref("0xc"),
-				"tail": ref("0xc"),
-			}}},
-			Globals: map[string]Value{},
-			Heap:    heap,
+	trace := &Trace{
+		Source: source,
+		Steps: []Step{
+			{
+				File: "main.go", Line: 11, PrevLine: 10, Function: "main.main",
+				Frames: []Frame{{Func: "main.main", Locals: map[string]Value{
+					"a":    ref("0xa"),
+					"b":    ref("0xb"),
+					"c":    ref("0xc"),
+					"tail": ref("0xc"),
+				}}},
+				Globals: map[string]Value{},
+				Heap:    heap,
+			},
 		},
 	}
 
 	var buf bytes.Buffer
-	if err := RenderHTML(&buf, "demo.go", source, steps); err != nil {
+	if err := RenderHTML(&buf, "demo.go", trace); err != nil {
 		t.Fatalf("RenderHTML() error = %v", err)
 	}
 
@@ -75,21 +78,17 @@ func TestRenderHTMLHeapDemo(t *testing.T) {
 
 func TestRenderHTMLFixture(t *testing.T) {
 	dir := filepath.Join("testdata/progs", "call_and_globals")
-	src, err := os.ReadFile(filepath.Join(dir, "prog.go"))
-	if err != nil {
-		t.Fatalf("ReadFile(prog.go) error = %v", err)
-	}
 
-	var steps []Step
-	readFixtureJSON(t, filepath.Join(dir, "trace.json"), &steps)
+	var trace Trace
+	readFixtureJSON(t, filepath.Join(dir, "trace.json"), &trace)
 
 	var buf bytes.Buffer
-	if err := RenderHTML(&buf, filepath.Join(dir, "prog.go"), string(src), steps); err != nil {
+	if err := RenderHTML(&buf, filepath.Join(dir, "prog.go"), &trace); err != nil {
 		t.Fatalf("RenderHTML() error = %v", err)
 	}
 
 	out := buf.String()
-	for _, need := range []string{"<title>Peek-A-Go", "const TRACE =", "const SOURCE =", "package main", "Frames", "Heap"} {
+	for _, need := range []string{"<title>Peek-A-Go", "const TRACE =", "const SOURCE =", "const OUTPUT =", "package main", "Frames", "Heap", "Stdout"} {
 		if !strings.Contains(out, need) {
 			t.Errorf("rendered HTML missing %q", need)
 		}

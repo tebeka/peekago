@@ -47,11 +47,11 @@ func TestTraceSourceFixtures(t *testing.T) {
 				return
 			}
 
-			var want []Step
+			var want Trace
 			readFixtureJSON(t, traceFile, &want)
-			if !reflect.DeepEqual(got, want) {
+			if !reflect.DeepEqual(got, &want) {
 				gotJSON := mustJSON(t, got)
-				wantJSON := mustJSON(t, want)
+				wantJSON := mustJSON(t, &want)
 				t.Fatalf("TraceSource() mismatch\nwant:\n%s\ngot:\n%s", wantJSON, gotJSON)
 			}
 		})
