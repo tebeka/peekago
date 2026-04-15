@@ -1,0 +1,116 @@
+{
+  "Source": "package main\n\nfunc main() {\n\tm := map[string]int{\"a\": 1}\n\tm[\"b\"] = 2\n\t_ = m\n}\n",
+  "Steps": [
+    {
+      "File": "main.go",
+      "Line": 3,
+      "PrevLine": 0,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 4,
+      "PrevLine": 3,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 5,
+      "PrevLine": 4,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "m": {
+              "Kind": "map",
+              "Type": "map[string]int",
+              "Pairs": [
+                {
+                  "Key": {
+                    "Kind": "prim",
+                    "Type": "string",
+                    "Prim": "\"a\""
+                  },
+                  "Value": {
+                    "Kind": "prim",
+                    "Type": "int",
+                    "Prim": "1"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 7,
+      "PrevLine": 5,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "m": {
+              "Kind": "map",
+              "Type": "map[string]int",
+              "Pairs": [
+                {
+                  "Key": {
+                    "Kind": "prim",
+                    "Type": "string",
+                    "Prim": "\"a\""
+                  },
+                  "Value": {
+                    "Kind": "prim",
+                    "Type": "int",
+                    "Prim": "1"
+                  }
+                },
+                {
+                  "Key": {
+                    "Kind": "prim",
+                    "Type": "string",
+                    "Prim": "\"b\""
+                  },
+                  "Value": {
+                    "Kind": "prim",
+                    "Type": "int",
+                    "Prim": "2"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    }
+  ],
+  "Output": ""
+}

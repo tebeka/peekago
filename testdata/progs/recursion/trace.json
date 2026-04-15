@@ -1,0 +1,447 @@
+{
+  "Source": "package main\n\nfunc fact(n int) int {\n\tif n \u003c= 1 {\n\t\treturn 1\n\t}\n\treturn n * fact(n-1)\n}\n\nfunc main() {\n\tr := fact(3)\n\t_ = r\n}\n",
+  "Steps": [
+    {
+      "File": "main.go",
+      "Line": 10,
+      "PrevLine": 0,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 11,
+      "PrevLine": 10,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 3,
+      "PrevLine": 11,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 4,
+      "PrevLine": 3,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 7,
+      "PrevLine": 4,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 3,
+      "PrevLine": 7,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            }
+          }
+        },
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 4,
+      "PrevLine": 3,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            }
+          }
+        },
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 7,
+      "PrevLine": 4,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            }
+          }
+        },
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 3,
+      "PrevLine": 7,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            }
+          }
+        },
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            }
+          }
+        },
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 4,
+      "PrevLine": 3,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            }
+          }
+        },
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            }
+          }
+        },
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 5,
+      "PrevLine": 4,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            }
+          }
+        },
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            }
+          }
+        },
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 7,
+      "PrevLine": 5,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            }
+          }
+        },
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 7,
+      "PrevLine": 7,
+      "Function": "main.fact",
+      "Frames": [
+        {
+          "Func": "main.fact",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          }
+        },
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 11,
+      "PrevLine": 7,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 13,
+      "PrevLine": 11,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "r": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "6"
+            }
+          }
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    }
+  ],
+  "Output": ""
+}
