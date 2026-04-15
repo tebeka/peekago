@@ -102,6 +102,11 @@
   footer input[type=range] { flex: 1; }
   footer .counter { font-family: var(--mono); font-size: 13px;
     color: var(--muted); min-width: 100px; text-align: right; }
+  #arrow-svg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none; z-index: 5; }
+  .v .ref.highlighted { background: #ffe69c; border-radius: 3px; padding: 0 3px; }
+  .heap-obj.highlighted { box-shadow: 0 0 0 2px #f79009;
+    border-color: #f79009; }
 </style>
 </head>
 <body>
@@ -133,6 +138,14 @@
     <pre id="stdout" class="stdout"></pre>
   </section>
 </div>
+<svg id="arrow-svg">
+  <defs>
+    <marker id="arrow-head" viewBox="0 0 10 10" refX="9" refY="5"
+      markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1570ef"></path>
+    </marker>
+  </defs>
+</svg>
 <footer>
   <button id="first">&lt;&lt; First</button>
   <button id="prev">&lt; Prev</button>
@@ -156,6 +169,8 @@ const OUTPUT = {{.Output}};
   const stdoutEl = document.getElementById("stdout");
   const counter = document.getElementById("counter");
   const slider = document.getElementById("slider");
+  const arrowSvg = document.getElementById("arrow-svg");
+  const SVG_NS = "http://www.w3.org/2000/svg";
   const btn = {
     first: document.getElementById("first"),
     prev: document.getElementById("prev"),
@@ -316,7 +331,74 @@ const OUTPUT = {{.Output}};
     slider.value = cursor;
     btn.first.disabled = btn.prev.disabled = cursor === 0;
     btn.next.disabled = btn.last.disabled = cursor === trace.length - 1;
+
+    requestAnimationFrame(drawArrows);
   }
+
+  function drawArrows() {
+    while (arrowSvg.childNodes.length > 1) {
+      arrowSvg.removeChild(arrowSvg.lastChild);
+    }
+
+    const refs = document.querySelectorAll("[data-ref]");
+    const framesRect = framesEl.getBoundingClientRect();
+    const heapRect = heapEl.getBoundingClientRect();
+
+    refs.forEach(refEl => {
+      const id = refEl.getAttribute("data-ref");
+      const target = heapEl.querySelector(`.heap-obj[data-id="${CSS.escape(id)}"]`);
+      if (!target) return;
+
+      const s = refEl.getBoundingClientRect();
+      const t = target.getBoundingClientRect();
+
+      const inFrames = s.right <= framesRect.right + 1 && s.left >= framesRect.left - 1;
+      const inHeap = s.right <= heapRect.right + 1 && s.left >= heapRect.left - 1;
+      const visibleInParent =
+        (inFrames && s.top >= framesRect.top - 2 && s.bottom <= framesRect.bottom + 2) ||
+        (inHeap && s.top >= heapRect.top - 2 && s.bottom <= heapRect.bottom + 2);
+      const targetVisible = t.top >= heapRect.top - 2 && t.bottom <= heapRect.bottom + 2;
+      if (!visibleInParent || !targetVisible) return;
+
+      const sx = s.right + 2;
+      const sy = (s.top + s.bottom) / 2;
+      const tx = t.left - 2;
+      const ty = (t.top + t.bottom) / 2;
+
+      const path = document.createElementNS(SVG_NS, "path");
+      const c1x = sx + Math.max(30, (tx - sx) * 0.55);
+      const c2x = tx - Math.max(30, (tx - sx) * 0.55);
+      path.setAttribute("d", `M ${sx} ${sy} C ${c1x} ${sy}, ${c2x} ${ty}, ${tx} ${ty}`);
+      path.setAttribute("stroke", "#1570ef");
+      path.setAttribute("stroke-width", "1.5");
+      path.setAttribute("fill", "none");
+      path.setAttribute("opacity", "0.75");
+      path.setAttribute("marker-end", "url(#arrow-head)");
+      arrowSvg.appendChild(path);
+    });
+  }
+
+  document.addEventListener("mouseover", e => {
+    const ref = e.target.closest("[data-ref]");
+    if (!ref) return;
+    ref.classList.add("highlighted");
+    const id = ref.getAttribute("data-ref");
+    const obj = heapEl.querySelector(`.heap-obj[data-id="${CSS.escape(id)}"]`);
+    if (obj) obj.classList.add("highlighted");
+  });
+  document.addEventListener("mouseout", e => {
+    const ref = e.target.closest("[data-ref]");
+    if (!ref) return;
+    ref.classList.remove("highlighted");
+    const id = ref.getAttribute("data-ref");
+    const obj = heapEl.querySelector(`.heap-obj[data-id="${CSS.escape(id)}"]`);
+    if (obj) obj.classList.remove("highlighted");
+  });
+
+  framesEl.addEventListener("scroll", drawArrows);
+  heapEl.addEventListener("scroll", drawArrows);
+  window.addEventListener("scroll", drawArrows, { passive: true });
+  window.addEventListener("resize", drawArrows);
 
   function go(i) {
     cursor = Math.max(0, Math.min(trace.length - 1, i));
