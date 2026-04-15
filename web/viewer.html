@@ -13,6 +13,9 @@
     --accent: #f97066;
     --accent-soft: #fde4e1;
     --past: #d1fadf;
+    --heap-bg: #eff8ff;
+    --heap-border: #b2ddff;
+    --ref: #1570ef;
     --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
   * { box-sizing: border-box; }
@@ -22,10 +25,10 @@
     background: var(--panel); display: flex; align-items: baseline; gap: 12px; }
   header h1 { margin: 0; font-size: 16px; font-weight: 600; }
   header .subtitle { color: var(--muted); font-size: 13px; }
-  main { display: grid; grid-template-columns: 1.3fr 1fr 1fr;
+  main { display: grid; grid-template-columns: 1.1fr 1fr 1fr;
     gap: 16px; padding: 16px 20px; }
   .panel { background: var(--panel); border: 1px solid var(--line);
-    border-radius: 8px; overflow: hidden; }
+    border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
   .panel h2 { margin: 0; padding: 10px 14px; font-size: 12px;
     font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
     color: var(--muted); border-bottom: 1px solid var(--line);
@@ -51,14 +54,35 @@
     border-radius: 2px; margin-right: 6px; vertical-align: middle; }
   .legend .swatch.past { background: var(--past); }
   .legend .swatch.next { background: var(--accent-soft); }
-  .kv { padding: 6px 0; font-family: var(--mono); font-size: 13px; }
-  .kv .row { padding: 4px 14px; display: flex; gap: 10px; }
-  .kv .row .k { color: var(--muted); min-width: 80px; }
-  .kv .row .v { color: var(--ink); word-break: break-all; }
-  .kv .empty { padding: 10px 14px; color: var(--muted); font-style: italic;
+  .scroll { padding: 10px 14px; overflow: auto; max-height: 70vh;
+    font-family: var(--mono); font-size: 13px; }
+  .empty { color: var(--muted); font-style: italic;
     font-family: -apple-system, sans-serif; font-size: 12px; }
-  .kv .row.changed .v { background: #fff3cd; border-radius: 3px;
-    padding: 0 4px; }
+  .frame { border: 1px solid var(--line); border-radius: 6px;
+    margin-bottom: 10px; overflow: hidden; background: #fff; }
+  .frame.top { border-color: #b2ddff; box-shadow: 0 0 0 2px #eff8ff; }
+  .frame-head { background: #f4f6fa; padding: 5px 10px; font-size: 12px;
+    color: var(--muted); border-bottom: 1px solid var(--line); }
+  .frame-head .name { color: var(--ink); font-weight: 600;
+    font-family: var(--mono); }
+  .frame-body { padding: 4px 0; }
+  .slot { display: flex; gap: 10px; padding: 3px 10px; align-items: baseline; }
+  .slot .k { color: var(--muted); min-width: 60px; }
+  .slot.changed .v { background: #fff3cd; border-radius: 3px; padding: 0 4px; }
+  .v .prim { color: var(--ink); }
+  .v .nilv { color: var(--muted); font-style: italic; }
+  .v .type { color: var(--muted); font-size: 11px; }
+  .v .ref { color: var(--ref); cursor: pointer; }
+  .v .ref:hover { text-decoration: underline; }
+  .heap-obj { border: 1px solid var(--heap-border); background: var(--heap-bg);
+    border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; }
+  .heap-obj .id { font-weight: 600; color: var(--ref); font-size: 12px;
+    margin-bottom: 4px; }
+  .struct, .slice, .array, .map { display: flex; flex-direction: column; gap: 2px; }
+  .struct .field, .map .pair { display: flex; gap: 8px; }
+  .struct .field .name { color: var(--muted); min-width: 60px; }
+  .map .pair .arrow { color: var(--muted); }
+  .slice .item, .array .item { padding-left: 12px; }
   footer { position: sticky; bottom: 0; background: var(--panel);
     border-top: 1px solid var(--line); padding: 12px 20px; display: flex;
     align-items: center; gap: 12px; }
@@ -69,7 +93,6 @@
   footer input[type=range] { flex: 1; }
   footer .counter { font-family: var(--mono); font-size: 13px;
     color: var(--muted); min-width: 100px; text-align: right; }
-  footer .fn { font-family: var(--mono); font-size: 13px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -87,12 +110,12 @@
     </div>
   </section>
   <section class="panel">
-    <h2>Locals <span id="fn-label" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)"></span></h2>
-    <div id="locals" class="kv"></div>
+    <h2>Frames &amp; Globals</h2>
+    <div id="frames" class="scroll"></div>
   </section>
   <section class="panel">
-    <h2>Globals</h2>
-    <div id="globals" class="kv"></div>
+    <h2>Heap</h2>
+    <div id="heap" class="scroll"></div>
   </section>
 </main>
 <footer>
@@ -101,7 +124,6 @@
   <button id="next">Next &gt;</button>
   <button id="last">Last &gt;&gt;</button>
   <input id="slider" type="range" min="0" max="0" value="0">
-  <span id="fn" class="fn"></span>
   <span id="counter" class="counter">Step 0 of 0</span>
 </footer>
 
@@ -112,10 +134,9 @@ const SOURCE = {{.Source}};
   const trace = TRACE;
   const source = SOURCE;
   const codeEl = document.getElementById("code");
-  const localsEl = document.getElementById("locals");
-  const globalsEl = document.getElementById("globals");
+  const framesEl = document.getElementById("frames");
+  const heapEl = document.getElementById("heap");
   const counter = document.getElementById("counter");
-  const fnEl = document.getElementById("fn");
   const slider = document.getElementById("slider");
   const btn = {
     first: document.getElementById("first"),
@@ -134,21 +155,66 @@ const SOURCE = {{.Source}};
   let cursor = 0;
 
   function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, c => ({
+    return String(s).replace(/[&<>"']/g, c => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
     }[c]));
   }
 
-  function renderKV(el, values, prev) {
-    const keys = Object.keys(values || {}).sort();
-    if (keys.length === 0) {
-      el.innerHTML = `<div class="empty">(none)</div>`;
-      return;
+  function labelFor(id, heapIndex) {
+    if (heapIndex.has(id)) return heapIndex.get(id);
+    const n = "h" + (heapIndex.size + 1);
+    heapIndex.set(id, n);
+    return n;
+  }
+
+  function renderValue(v, heapIndex) {
+    if (!v || !v.Kind || v.Kind === "nil") {
+      return `<span class="nilv">nil</span>`;
     }
-    el.innerHTML = keys.map(k => {
-      const changed = !prev || prev[k] !== values[k];
-      return `<div class="row${changed ? " changed" : ""}"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(values[k])}</span></div>`;
-    }).join("");
+    if (v.Kind === "prim") {
+      return `<span class="prim">${escapeHtml(v.Prim || "")}</span>`;
+    }
+    if (v.Kind === "ref") {
+      const label = labelFor(v.Ref, heapIndex);
+      return `<span class="ref" data-ref="${escapeHtml(v.Ref)}">→ ${escapeHtml(label)}</span>`;
+    }
+    if (v.Kind === "struct") {
+      const fields = (v.Fields || []).map(f =>
+        `<div class="field"><span class="name">${escapeHtml(f.Name)}</span>${renderValue(f.Value, heapIndex)}</div>`
+      ).join("");
+      return `<div class="struct">${fields}</div>`;
+    }
+    if (v.Kind === "slice" || v.Kind === "array") {
+      const items = (v.Elems || []).map((e, i) =>
+        `<div class="item">[${i}] ${renderValue(e, heapIndex)}</div>`
+      ).join("");
+      return `<div class="${v.Kind}">${items}</div>`;
+    }
+    if (v.Kind === "map") {
+      const pairs = (v.Pairs || []).map(p =>
+        `<div class="pair">${renderValue(p.Key, heapIndex)}<span class="arrow">:</span>${renderValue(p.Value, heapIndex)}</div>`
+      ).join("");
+      return `<div class="map">${pairs}</div>`;
+    }
+    return `<span class="prim">${escapeHtml(JSON.stringify(v))}</span>`;
+  }
+
+  function sameJSON(a, b) {
+    return JSON.stringify(a || null) === JSON.stringify(b || null);
+  }
+
+  function renderSlot(name, value, prevValue, heapIndex) {
+    const changed = !sameJSON(value, prevValue);
+    return `<div class="slot${changed ? " changed" : ""}">
+      <span class="k">${escapeHtml(name)}</span>
+      <span class="v">${renderValue(value, heapIndex)}</span>
+    </div>`;
+  }
+
+  function renderMap(values, prev, heapIndex) {
+    const keys = Object.keys(values || {}).sort();
+    if (keys.length === 0) return `<div class="empty">(none)</div>`;
+    return keys.map(k => renderSlot(k, values[k], prev && prev[k], heapIndex)).join("");
   }
 
   function render() {
@@ -162,8 +228,8 @@ const SOURCE = {{.Source}};
     codeEl.querySelectorAll(".ln.next, .ln.past").forEach(el => {
       el.classList.remove("next", "past");
     });
-    if (prev) {
-      const pastEl = codeEl.querySelector(`.ln[data-line="${prev.Line}"]`);
+    if (step.PrevLine) {
+      const pastEl = codeEl.querySelector(`.ln[data-line="${step.PrevLine}"]`);
       if (pastEl) pastEl.classList.add("past");
     }
     const lineEl = codeEl.querySelector(`.ln[data-line="${step.Line}"]`);
@@ -172,13 +238,56 @@ const SOURCE = {{.Source}};
       lineEl.scrollIntoView({ block: "nearest" });
     }
 
-    renderKV(localsEl, step.Locals, prev && prev.Locals);
-    renderKV(globalsEl, step.Globals, prev && prev.Globals);
+    // Build a heap label index so refs and heap boxes share the same short names.
+    const heapIndex = new Map();
+    // Pre-seed labels in traversal order: walk frames, globals, then remaining heap.
+    const seeder = (val) => {
+      if (!val) return;
+      if (val.Kind === "ref") labelFor(val.Ref, heapIndex);
+      if (val.Fields) val.Fields.forEach(f => seeder(f.Value));
+      if (val.Elems) val.Elems.forEach(seeder);
+      if (val.Pairs) val.Pairs.forEach(p => { seeder(p.Key); seeder(p.Value); });
+    };
+    (step.Frames || []).forEach(f => Object.values(f.Locals || {}).forEach(seeder));
+    Object.values(step.Globals || {}).forEach(seeder);
+    Object.keys(step.Heap || {}).forEach(id => labelFor(id, heapIndex));
+
+    // Frames (top first)
+    const prevFrames = prev && prev.Frames ? prev.Frames : [];
+    const frames = step.Frames || [];
+    const framesHTML = frames.map((f, i) => {
+      const prevLocals = prevFrames[i] && prevFrames[i].Func === f.Func ? prevFrames[i].Locals : null;
+      const slots = renderMap(f.Locals, prevLocals, heapIndex);
+      return `<div class="frame${i === 0 ? " top" : ""}">
+        <div class="frame-head">frame <span class="name">${escapeHtml(f.Func || "(unknown)")}</span></div>
+        <div class="frame-body">${slots}</div>
+      </div>`;
+    }).join("");
+
+    const prevGlobals = prev ? prev.Globals : null;
+    const globalsHTML = `<div class="frame">
+      <div class="frame-head">globals</div>
+      <div class="frame-body">${renderMap(step.Globals, prevGlobals, heapIndex)}</div>
+    </div>`;
+
+    framesEl.innerHTML = (framesHTML || `<div class="empty">(no user frames)</div>`) + globalsHTML;
+
+    // Heap
+    const heap = step.Heap || {};
+    const heapIDs = Array.from(heapIndex.keys()).filter(id => heap[id] !== undefined);
+    if (heapIDs.length === 0) {
+      heapEl.innerHTML = `<div class="empty">(empty)</div>`;
+    } else {
+      heapEl.innerHTML = heapIDs.map(id => {
+        const label = heapIndex.get(id);
+        return `<div class="heap-obj" data-id="${escapeHtml(id)}">
+          <div class="id">${escapeHtml(label)} <span class="type">${escapeHtml(heap[id].Type || "")}</span></div>
+          ${renderValue(heap[id], heapIndex)}
+        </div>`;
+      }).join("");
+    }
 
     counter.textContent = `Step ${cursor + 1} of ${trace.length}`;
-    const fnLabel = step.Function ? `— ${step.Function}` : "";
-    document.getElementById("fn-label").textContent = fnLabel;
-    fnEl.textContent = step.Function ? `in ${step.Function}` : "";
     slider.value = cursor;
     btn.first.disabled = btn.prev.disabled = cursor === 0;
     btn.next.disabled = btn.last.disabled = cursor === trace.length - 1;

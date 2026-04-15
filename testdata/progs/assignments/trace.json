@@ -2,44 +2,64 @@
   {
     "File": "main.go",
     "Line": 3,
+    "PrevLine": 0,
     "Function": "",
-    "Locals": {},
-    "Globals": {}
+    "Frames": [
+      {"Func": "", "Locals": {}}
+    ],
+    "Globals": {},
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 4,
+    "PrevLine": 3,
     "Function": "",
-    "Locals": {},
-    "Globals": {}
+    "Frames": [
+      {"Func": "", "Locals": {}}
+    ],
+    "Globals": {},
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 5,
+    "PrevLine": 4,
     "Function": "",
-    "Locals": {
-      "a": "1"
-    },
-    "Globals": {}
+    "Frames": [
+      {"Func": "", "Locals": {
+        "a": {"Kind": "prim", "Type": "int", "Prim": "1"}
+      }}
+    ],
+    "Globals": {},
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 6,
+    "PrevLine": 5,
     "Function": "",
-    "Locals": {
-      "a": "1",
-      "b": "3"
-    },
-    "Globals": {}
+    "Frames": [
+      {"Func": "", "Locals": {
+        "a": {"Kind": "prim", "Type": "int", "Prim": "1"},
+        "b": {"Kind": "prim", "Type": "int", "Prim": "3"}
+      }}
+    ],
+    "Globals": {},
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 8,
+    "PrevLine": 6,
     "Function": "",
-    "Locals": {
-      "a": "6",
-      "b": "3"
-    },
-    "Globals": {}
+    "Frames": [
+      {"Func": "", "Locals": {
+        "a": {"Kind": "prim", "Type": "int", "Prim": "6"},
+        "b": {"Kind": "prim", "Type": "int", "Prim": "3"}
+      }}
+    ],
+    "Globals": {},
+    "Heap": {}
   }
 ]

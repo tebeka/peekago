@@ -2,98 +2,143 @@
   {
     "File": "main.go",
     "Line": 12,
+    "PrevLine": 0,
     "Function": "",
-    "Locals": {},
+    "Frames": [
+      {"Func": "", "Locals": {}}
+    ],
     "Globals": {
-      "total": "1"
-    }
+      "total": {"Kind": "prim", "Type": "int", "Prim": "1"}
+    },
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 13,
+    "PrevLine": 12,
     "Function": "",
-    "Locals": {},
+    "Frames": [
+      {"Func": "", "Locals": {}}
+    ],
     "Globals": {
-      "total": "1"
-    }
+      "total": {"Kind": "prim", "Type": "int", "Prim": "1"}
+    },
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 14,
+    "PrevLine": 13,
     "Function": "",
-    "Locals": {
-      "x": "2"
-    },
+    "Frames": [
+      {"Func": "", "Locals": {
+        "x": {"Kind": "prim", "Type": "int", "Prim": "2"}
+      }}
+    ],
     "Globals": {
-      "total": "1"
-    }
+      "total": {"Kind": "prim", "Type": "int", "Prim": "1"}
+    },
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 7,
+    "PrevLine": 14,
     "Function": "",
-    "Locals": {
-      "n": "2"
-    },
+    "Frames": [
+      {"Func": "", "Locals": {
+        "n": {"Kind": "prim", "Type": "int", "Prim": "2"}
+      }},
+      {"Func": "", "Locals": {
+        "x": {"Kind": "prim", "Type": "int", "Prim": "2"}
+      }}
+    ],
     "Globals": {
-      "total": "1"
-    }
+      "total": {"Kind": "prim", "Type": "int", "Prim": "1"}
+    },
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 8,
+    "PrevLine": 7,
     "Function": "",
-    "Locals": {
-      "n": "2"
-    },
+    "Frames": [
+      {"Func": "", "Locals": {
+        "n": {"Kind": "prim", "Type": "int", "Prim": "2"}
+      }},
+      {"Func": "", "Locals": {
+        "x": {"Kind": "prim", "Type": "int", "Prim": "2"}
+      }}
+    ],
     "Globals": {
-      "total": "1"
-    }
+      "total": {"Kind": "prim", "Type": "int", "Prim": "1"}
+    },
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 9,
+    "PrevLine": 8,
     "Function": "",
-    "Locals": {
-      "n": "2"
-    },
+    "Frames": [
+      {"Func": "", "Locals": {
+        "n": {"Kind": "prim", "Type": "int", "Prim": "2"}
+      }},
+      {"Func": "", "Locals": {
+        "x": {"Kind": "prim", "Type": "int", "Prim": "2"}
+      }}
+    ],
     "Globals": {
-      "total": "3"
-    }
+      "total": {"Kind": "prim", "Type": "int", "Prim": "3"}
+    },
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 14,
+    "PrevLine": 9,
     "Function": "",
-    "Locals": {
-      "x": "2"
-    },
+    "Frames": [
+      {"Func": "", "Locals": {
+        "x": {"Kind": "prim", "Type": "int", "Prim": "2"}
+      }}
+    ],
     "Globals": {
-      "total": "3"
-    }
+      "total": {"Kind": "prim", "Type": "int", "Prim": "3"}
+    },
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 15,
+    "PrevLine": 14,
     "Function": "",
-    "Locals": {
-      "x": "2",
-      "y": "3"
-    },
+    "Frames": [
+      {"Func": "", "Locals": {
+        "x": {"Kind": "prim", "Type": "int", "Prim": "2"},
+        "y": {"Kind": "prim", "Type": "int", "Prim": "3"}
+      }}
+    ],
     "Globals": {
-      "total": "3"
-    }
+      "total": {"Kind": "prim", "Type": "int", "Prim": "3"}
+    },
+    "Heap": {}
   },
   {
     "File": "main.go",
     "Line": 16,
+    "PrevLine": 15,
     "Function": "",
-    "Locals": {
-      "x": "2",
-      "y": "3"
-    },
+    "Frames": [
+      {"Func": "", "Locals": {
+        "x": {"Kind": "prim", "Type": "int", "Prim": "2"},
+        "y": {"Kind": "prim", "Type": "int", "Prim": "3"}
+      }}
+    ],
     "Globals": {
-      "total": "3"
-    }
+      "total": {"Kind": "prim", "Type": "int", "Prim": "3"}
+    },
+    "Heap": {}
   }
 ]

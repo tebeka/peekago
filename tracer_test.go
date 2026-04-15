@@ -38,8 +38,17 @@ func TestTraceSourceFixtures(t *testing.T) {
 				t.Fatalf("TraceSource() error = %v", err)
 			}
 
+			traceFile := filepath.Join(dir, "trace.json")
+			if os.Getenv("PKGO_REGEN") != "" {
+				data := mustJSON(t, got)
+				if err := os.WriteFile(traceFile, append([]byte(data), '\n'), 0o644); err != nil {
+					t.Fatalf("WriteFile(%s) error = %v", traceFile, err)
+				}
+				return
+			}
+
 			var want []Step
-			readFixtureJSON(t, filepath.Join(dir, "trace.json"), &want)
+			readFixtureJSON(t, traceFile, &want)
 			if !reflect.DeepEqual(got, want) {
 				gotJSON := mustJSON(t, got)
 				wantJSON := mustJSON(t, want)

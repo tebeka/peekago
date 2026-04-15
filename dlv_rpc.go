@@ -101,7 +101,7 @@ func (c *rpcClient) stacktrace(ctx context.Context, goroutineID int64) ([]stackF
 		Cfg   *loadConfig
 	}{
 		ID:    goroutineID,
-		Depth: 1,
+		Depth: stacktraceDepth,
 		Full:  true,
 		Cfg:   defaultLoadConfig(),
 	}, &out)

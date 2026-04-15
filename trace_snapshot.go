@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
 	"reflect"
-	"slices"
 	"strconv"
 	"strings"
 )
@@ -34,7 +34,7 @@ func advanceToUserFrame(ctx context.Context, client *rpcClient, state *debuggerS
 	return state, nil
 }
 
-func snapshot(ctx context.Context, client *rpcClient, state *debuggerState) (Step, bool, error) {
+func snapshot(ctx context.Context, client *rpcClient, state *debuggerState, prevLine int) (Step, bool, error) {
 	location := currentLocation(state)
 	if filepath.Base(location.File) != traceFileName || location.Line == 0 {
 		return Step{}, false, nil
@@ -46,21 +46,36 @@ func snapshot(ctx context.Context, client *rpcClient, state *debuggerState) (Ste
 		return Step{}, false, fmt.Errorf("stacktrace: %w", err)
 	}
 
-	locals := map[string]string{}
-	function := functionName(location.Function)
-	if len(frames) > 0 {
-		function = functionName(frames[0].Location.Function)
-		for _, arg := range frames[0].Arguments {
+	heap := map[string]Value{}
+
+	outFrames := []Frame{}
+	for _, frame := range frames {
+		if filepath.Base(frame.Location.File) != traceFileName {
+			continue
+		}
+
+		locals := map[string]Value{}
+		for _, arg := range frame.Arguments {
 			if name := cleanVarName(arg.Name); name != "" {
-				locals[name] = formatVariable(arg)
+				locals[name] = walkValue(arg, heap)
 			}
 		}
 
-		for _, local := range frames[0].Locals {
+		for _, local := range frame.Locals {
 			if name := cleanVarName(local.Name); name != "" {
-				locals[name] = formatVariable(local)
+				locals[name] = walkValue(local, heap)
 			}
 		}
+
+		outFrames = append(outFrames, Frame{
+			Func:   functionName(frame.Location.Function),
+			Locals: locals,
+		})
+	}
+
+	function := functionName(location.Function)
+	if len(outFrames) > 0 {
+		function = outFrames[0].Func
 	}
 
 	globalsList, err := client.packageVars(ctx)
@@ -68,22 +83,24 @@ func snapshot(ctx context.Context, client *rpcClient, state *debuggerState) (Ste
 		return Step{}, false, fmt.Errorf("package vars: %w", err)
 	}
 
-	globals := map[string]string{}
+	globals := map[string]Value{}
 	for _, global := range globalsList {
 		name := cleanVarName(global.Name)
 		if name == "" {
 			continue
 		}
 
-		globals[name] = formatVariable(global)
+		globals[name] = walkValue(global, heap)
 	}
 
 	return Step{
 		File:     traceFileName,
 		Line:     location.Line,
+		PrevLine: prevLine,
 		Function: function,
-		Locals:   locals,
+		Frames:   outFrames,
 		Globals:  globals,
+		Heap:     heap,
 	}, true, nil
 }
 
@@ -159,35 +176,13 @@ func exitedError(state *debuggerState) error {
 }
 
 func stepFingerprint(step Step) string {
-	var b strings.Builder
-	b.WriteString(step.File)
-	b.WriteByte(':')
-	b.WriteString(strconv.Itoa(step.Line))
-	b.WriteByte(':')
-	b.WriteString(step.Function)
-	b.WriteByte('|')
-	b.WriteString(stableMap(step.Locals))
-	b.WriteByte('|')
-	b.WriteString(stableMap(step.Globals))
-	return b.String()
-}
-
-func stableMap(values map[string]string) string {
-	keys := make([]string, 0, len(values))
-	for key := range values {
-		keys = append(keys, key)
+	tmp := step
+	tmp.PrevLine = 0
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		return ""
 	}
-	slices.Sort(keys)
-
-	var b strings.Builder
-	for _, key := range keys {
-		b.WriteString(key)
-		b.WriteByte('=')
-		b.WriteString(values[key])
-		b.WriteByte(';')
-	}
-
-	return b.String()
+	return string(data)
 }
 
 func defaultLoadConfig() *loadConfig {
@@ -200,93 +195,95 @@ func defaultLoadConfig() *loadConfig {
 	}
 }
 
-func formatVariable(v variable) string {
+func walkValue(v variable, heap map[string]Value) Value {
 	if v.Unreadable != "" {
-		return "<unreadable>"
-	}
-
-	if v.Kind == reflect.String {
-		return strconv.Quote(v.Value)
-	}
-
-	if v.Value != "" && len(v.Children) == 0 {
-		return v.Value
+		return Value{Kind: "prim", Type: v.Type, Prim: "<unreadable>"}
 	}
 
 	switch v.Kind {
-	case reflect.Pointer:
-		if len(v.Children) == 0 {
-			return "nil"
-		}
-
-		return "&" + formatVariable(v.Children[0])
-	case reflect.Struct:
-		parts := make([]string, 0, len(v.Children))
-		for _, child := range v.Children {
-			label := child.Name
-			if label == "" {
-				label = "?"
-			}
-			parts = append(parts, label+":"+formatVariable(child))
-		}
-		return wrapType(v.Type, "{"+strings.Join(parts, ", ")+"}")
-	case reflect.Array, reflect.Slice:
-		if len(v.Children) == 0 && v.Base == 0 && v.Len == 0 {
-			return "nil"
-		}
-
-		items := make([]string, 0, len(v.Children))
-		for _, child := range v.Children {
-			items = append(items, formatVariable(child))
-		}
-		return "[" + strings.Join(items, ", ") + "]"
-	case reflect.Map:
-		if len(v.Children) == 0 && v.Len == 0 {
-			return "nil"
-		}
-
-		items := make([]string, 0, len(v.Children)/2)
-		for i := 0; i+1 < len(v.Children); i += 2 {
-			items = append(items, formatVariable(v.Children[i])+":"+formatVariable(v.Children[i+1]))
-		}
-		return "map[" + strings.Join(items, ", ") + "]"
-	case reflect.Interface:
-		if len(v.Children) == 0 {
-			return "nil"
-		}
-
-		return formatVariable(v.Children[0])
-	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+	case reflect.Bool,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
 		reflect.Float32, reflect.Float64, reflect.Complex64, reflect.Complex128:
-		if v.Value != "" {
-			return v.Value
+		return Value{Kind: "prim", Type: v.Type, Prim: v.Value}
+
+	case reflect.String:
+		return Value{Kind: "prim", Type: v.Type, Prim: strconv.Quote(v.Value)}
+
+	case reflect.Pointer:
+		if len(v.Children) == 0 {
+			return Value{Kind: "nil", Type: v.Type}
 		}
+		child := v.Children[0]
+		id := heapID(child)
+		if id == "" {
+			return walkValue(child, heap)
+		}
+		if _, ok := heap[id]; !ok {
+			heap[id] = Value{}
+			heap[id] = walkValue(child, heap)
+		}
+		return Value{Kind: "ref", Type: v.Type, Ref: id}
+
+	case reflect.Struct:
+		fields := make([]Field, 0, len(v.Children))
+		for _, child := range v.Children {
+			name := child.Name
+			if name == "" {
+				name = "?"
+			}
+			fields = append(fields, Field{Name: name, Value: walkValue(child, heap)})
+		}
+		return Value{Kind: "struct", Type: v.Type, Fields: fields}
+
+	case reflect.Slice, reflect.Array:
+		if len(v.Children) == 0 && v.Base == 0 && v.Len == 0 {
+			return Value{Kind: "nil", Type: v.Type}
+		}
+		elems := make([]Value, 0, len(v.Children))
+		for _, child := range v.Children {
+			elems = append(elems, walkValue(child, heap))
+		}
+		kind := "slice"
+		if v.Kind == reflect.Array {
+			kind = "array"
+		}
+		return Value{Kind: kind, Type: v.Type, Elems: elems}
+
+	case reflect.Map:
+		if len(v.Children) == 0 && v.Len == 0 {
+			return Value{Kind: "nil", Type: v.Type}
+		}
+		pairs := make([]Pair, 0, len(v.Children)/2)
+		for i := 0; i+1 < len(v.Children); i += 2 {
+			pairs = append(pairs, Pair{
+				Key:   walkValue(v.Children[i], heap),
+				Value: walkValue(v.Children[i+1], heap),
+			})
+		}
+		return Value{Kind: "map", Type: v.Type, Pairs: pairs}
+
+	case reflect.Interface:
+		if len(v.Children) == 0 {
+			return Value{Kind: "nil", Type: v.Type}
+		}
+		return walkValue(v.Children[0], heap)
 	}
 
-	if len(v.Children) > 0 {
-		items := make([]string, 0, len(v.Children))
-		for _, child := range v.Children {
-			items = append(items, formatVariable(child))
-		}
-		return wrapType(v.Type, "["+strings.Join(items, ", ")+"]")
+	if v.Value != "" {
+		return Value{Kind: "prim", Type: v.Type, Prim: v.Value}
 	}
 
 	if v.OnlyAddr && v.Addr != 0 {
-		return fmt.Sprintf("%#x", v.Addr)
+		return Value{Kind: "prim", Type: v.Type, Prim: fmt.Sprintf("%#x", v.Addr)}
 	}
 
-	if v.Type != "" {
-		return v.Type
-	}
-
-	return "nil"
+	return Value{Kind: "nil", Type: v.Type}
 }
 
-func wrapType(typ string, value string) string {
-	if typ == "" {
-		return value
+func heapID(v variable) string {
+	if v.Addr == 0 {
+		return ""
 	}
-
-	return typ + value
+	return fmt.Sprintf("0x%x", v.Addr)
 }

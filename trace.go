@@ -17,6 +17,7 @@ const (
 	maxArrayValues   = 16
 	maxStructFields  = 16
 	maxVariableDepth = 2
+	stacktraceDepth  = 32
 )
 
 var errStepLimit = errors.New("trace step limit reached")
@@ -24,9 +25,36 @@ var errStepLimit = errors.New("trace step limit reached")
 type Step struct {
 	File     string
 	Line     int
+	PrevLine int
 	Function string
-	Locals   map[string]string
-	Globals  map[string]string
+	Frames   []Frame
+	Globals  map[string]Value
+	Heap     map[string]Value
+}
+
+type Frame struct {
+	Func   string
+	Locals map[string]Value
+}
+
+type Value struct {
+	Kind   string  `json:"Kind,omitempty"`
+	Type   string  `json:"Type,omitempty"`
+	Prim   string  `json:"Prim,omitempty"`
+	Ref    string  `json:"Ref,omitempty"`
+	Fields []Field `json:"Fields,omitempty"`
+	Elems  []Value `json:"Elems,omitempty"`
+	Pairs  []Pair  `json:"Pairs,omitempty"`
+}
+
+type Field struct {
+	Name  string
+	Value Value
+}
+
+type Pair struct {
+	Key   Value
+	Value Value
 }
 
 func TraceFile(ctx context.Context, name string) ([]Step, error) {
@@ -99,6 +127,7 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 	var (
 		steps     []Step
 		seenState string
+		prevLine  int
 	)
 
 	for range defaultStepLimit {
@@ -115,7 +144,7 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 			return steps, exitedError(state)
 		}
 
-		step, ok, err := snapshot(ctx, client, state)
+		step, ok, err := snapshot(ctx, client, state, prevLine)
 		if err != nil {
 			return steps, err
 		}
@@ -125,6 +154,7 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 			if fingerprint != seenState {
 				steps = append(steps, step)
 				seenState = fingerprint
+				prevLine = step.Line
 			}
 		}
 
