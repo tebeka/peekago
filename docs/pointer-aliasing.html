@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Peek-A-Go — prog.go</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --panel: #ffffff;
+    --ink: #1c2434;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --accent: #f97066;
+    --accent-soft: #fde4e1;
+    --past: #d1fadf;
+    --heap-bg: #eff8ff;
+    --heap-border: #b2ddff;
+    --ref: #1570ef;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  header { padding: 14px 20px; border-bottom: 1px solid var(--line);
+    background: var(--panel); display: flex; align-items: baseline; gap: 12px; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  header .subtitle { color: var(--muted); font-size: 13px; }
+  main { display: grid; grid-template-columns: 1.1fr 1fr 1fr;
+    gap: 16px; padding: 16px 20px 0; }
+  .output-wrap { padding: 0 20px 16px; }
+  .output-wrap .panel { }
+  pre.stdout { margin: 0; padding: 10px 14px; font-family: var(--mono);
+    font-size: 13px; max-height: 160px; overflow: auto; white-space: pre-wrap;
+    word-break: break-all; background: #fcfcfb; }
+  pre.stdout .cursor { background: #1c2434; color: #fff; padding: 0 2px;
+    border-radius: 2px; }
+  pre.stdout .empty { color: var(--muted); font-style: italic;
+    font-family: -apple-system, sans-serif; }
+  .panel { background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+  .panel h2 { margin: 0; padding: 10px 14px; font-size: 12px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); border-bottom: 1px solid var(--line);
+    background: #fbfbfa; }
+  pre.code { margin: 0; padding: 10px 0; font-family: var(--mono);
+    font-size: 13px; line-height: 1.55; overflow: auto; max-height: 70vh; }
+  pre.code .ln { display: flex; padding: 0 14px; }
+  pre.code .ln .n { width: 32px; color: var(--muted); text-align: right;
+    margin-right: 12px; user-select: none; }
+  pre.code .ln .t { white-space: pre; }
+  pre.code .ln.next { background: var(--accent-soft); }
+  pre.code .ln.next .n { color: var(--accent); font-weight: 600; }
+  pre.code .ln.next::before { content: "▶"; color: var(--accent);
+    position: absolute; margin-left: -14px; font-size: 10px; }
+  pre.code .ln.past { background: var(--past); }
+  pre.code .ln.past .n { color: #067647; font-weight: 600; }
+  pre.code .ln.past::before { content: "▶"; color: #12b76a;
+    position: absolute; margin-left: -14px; font-size: 10px; }
+  .legend { padding: 8px 14px; border-top: 1px solid var(--line);
+    font-size: 11px; color: var(--muted); display: flex; gap: 16px;
+    background: #fbfbfa; }
+  .legend .swatch { display: inline-block; width: 10px; height: 10px;
+    border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .legend .swatch.past { background: var(--past); }
+  .legend .swatch.next { background: var(--accent-soft); }
+  .scroll { padding: 10px 14px; overflow: auto; max-height: 70vh;
+    font-family: var(--mono); font-size: 13px; }
+  .empty { color: var(--muted); font-style: italic;
+    font-family: -apple-system, sans-serif; font-size: 12px; }
+  .frame { border: 1px solid var(--line); border-radius: 6px;
+    margin-bottom: 10px; overflow: hidden; background: #fff; }
+  .frame.top { border-color: #b2ddff; box-shadow: 0 0 0 2px #eff8ff; }
+  .frame-head { background: #f4f6fa; padding: 5px 10px; font-size: 12px;
+    color: var(--muted); border-bottom: 1px solid var(--line); }
+  .frame-head .name { color: var(--ink); font-weight: 600;
+    font-family: var(--mono); }
+  .frame-body { padding: 4px 0; }
+  .slot { display: flex; gap: 10px; padding: 3px 10px; align-items: baseline; }
+  .slot .k { color: var(--muted); min-width: 60px; }
+  .slot.changed .v { background: #fff3cd; border-radius: 3px; padding: 0 4px; }
+  .v .prim { color: var(--ink); }
+  .v .nilv { color: var(--muted); font-style: italic; }
+  .v .type { color: var(--muted); font-size: 11px; }
+  .v .ref { color: var(--ref); cursor: pointer; }
+  .v .ref:hover { text-decoration: underline; }
+  .heap-obj { border: 1px solid var(--heap-border); background: var(--heap-bg);
+    border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; }
+  .heap-obj .id { font-weight: 600; color: var(--ref); font-size: 12px;
+    margin-bottom: 4px; }
+  .struct, .slice, .array, .map { display: flex; flex-direction: column; gap: 2px; }
+  .struct .field, .map .pair { display: flex; gap: 8px; }
+  .struct .field .name { color: var(--muted); min-width: 60px; }
+  .map .pair .arrow { color: var(--muted); }
+  .slice .item, .array .item { padding-left: 12px; }
+  .cells { display: grid; grid-auto-flow: row dense; justify-content: start; }
+  .cell { display: flex; flex-direction: column; align-items: center;
+    min-width: 32px; padding: 2px 6px; border: 1px solid var(--heap-border);
+    margin-left: -1px; margin-top: -1px; background: #fff; }
+  .cell .idx { color: var(--muted); font-size: 10px; }
+  .cell.spare { border-style: dashed; background: transparent; color: var(--muted); }
+  .cell.highlighted { background: #ffe69c; }
+  .bracket { height: 7px; margin: 3px 4px 0; border: 2px solid var(--ref);
+    border-top: none; border-radius: 0 0 4px 4px; opacity: 0.75; }
+  .bracket.empty { border-style: dashed; }
+  .bracket.highlighted { border-width: 3px; opacity: 1; }
+  footer { position: sticky; bottom: 0; background: var(--panel);
+    border-top: 1px solid var(--line); padding: 12px 20px; display: flex;
+    align-items: center; gap: 12px; }
+  footer button { font: inherit; padding: 6px 12px; border: 1px solid var(--line);
+    background: #fff; border-radius: 6px; cursor: pointer; }
+  footer button:hover:not(:disabled) { background: #f4f4f2; }
+  footer button:disabled { opacity: 0.4; cursor: not-allowed; }
+  footer input[type=range] { flex: 1; }
+  footer .counter { font-family: var(--mono); font-size: 13px;
+    color: var(--muted); min-width: 100px; text-align: right; }
+  #arrow-svg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none; z-index: 5; }
+  .v .ref.highlighted { background: #ffe69c; border-radius: 3px; padding: 0 3px; }
+  .heap-obj.highlighted { box-shadow: 0 0 0 2px #f79009;
+    border-color: #f79009; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Peek-A-Go</h1>
+  <span class="subtitle">prog.go</span>
+</header>
+<main>
+  <section class="panel">
+    <h2>Source</h2>
+    <pre id="code" class="code"></pre>
+    <div class="legend">
+      <span><span class="swatch past"></span>line that just executed</span>
+      <span><span class="swatch next"></span>next line to execute</span>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Frames &amp; Globals</h2>
+    <div id="frames" class="scroll"></div>
+  </section>
+  <section class="panel">
+    <h2>Heap</h2>
+    <div id="heap" class="scroll"></div>
+  </section>
+</main>
+<div class="output-wrap">
+  <section class="panel">
+    <h2>Stdout</h2>
+    <pre id="stdout" class="stdout"></pre>
+  </section>
+</div>
+<svg id="arrow-svg">
+  <defs></defs>
+</svg>
+<footer>
+  <button id="first">&lt;&lt; First</button>
+  <button id="prev">&lt; Prev</button>
+  <button id="next">Next &gt;</button>
+  <button id="last">Last &gt;&gt;</button>
+  <input id="slider" type="range" min="0" max="0" value="0">
+  <span id="counter" class="counter">Step 0 of 0</span>
+</footer>
+
+<script>
+const TRACE = [{"File":"main.go","Line":7,"PrevLine":0,"Function":"main.main","Frames":[{"Func":"main.main","Locals":{}}],"Globals":{},"Heap":{},"StdoutLen":0},{"File":"main.go","Line":8,"PrevLine":7,"Function":"main.main","Frames":[{"Func":"main.main","Locals":{}}],"Globals":{},"Heap":{},"StdoutLen":0},{"File":"main.go","Line":9,"PrevLine":8,"Function":"main.main","Frames":[{"Func":"main.main","Locals":{"a":{"Kind":"ref","Type":"*main.Box","Ref":"0x27bceec30eb0"}}}],"Globals":{},"Heap":{"0x27bceec30eb0":{"Kind":"struct","Type":"main.Box","Fields":[{"Name":"Val","Value":{"Kind":"prim","Type":"int","Prim":"1"}}]}},"StdoutLen":0},{"File":"main.go","Line":10,"PrevLine":9,"Function":"main.main","Frames":[{"Func":"main.main","Locals":{"a":{"Kind":"ref","Type":"*main.Box","Ref":"0x27bceec30eb0"},"b":{"Kind":"ref","Type":"*main.Box","Ref":"0x27bceec30eb0"}}}],"Globals":{},"Heap":{"0x27bceec30eb0":{"Kind":"struct","Type":"main.Box","Fields":[{"Name":"Val","Value":{"Kind":"prim","Type":"int","Prim":"1"}}]}},"StdoutLen":0},{"File":"main.go","Line":13,"PrevLine":10,"Function":"main.main","Frames":[{"Func":"main.main","Locals":{"a":{"Kind":"ref","Type":"*main.Box","Ref":"0x27bceec30eb0"},"b":{"Kind":"ref","Type":"*main.Box","Ref":"0x27bceec30eb0"}}}],"Globals":{},"Heap":{"0x27bceec30eb0":{"Kind":"struct","Type":"main.Box","Fields":[{"Name":"Val","Value":{"Kind":"prim","Type":"int","Prim":"2"}}]}},"StdoutLen":0}];
+const SOURCE = "package main\n\ntype Box struct {\n\tVal int\n}\n\nfunc main() {\n\ta := \u0026Box{Val: 1}\n\tb := a\n\tb.Val = 2\n\t_ = a\n\t_ = b\n}\n";
+const OUTPUT = "";
+(function () {
+  const trace = TRACE;
+  const source = SOURCE;
+  const fullOutput = OUTPUT || "";
+  const codeEl = document.getElementById("code");
+  const framesEl = document.getElementById("frames");
+  const heapEl = document.getElementById("heap");
+  const stdoutEl = document.getElementById("stdout");
+  const counter = document.getElementById("counter");
+  const slider = document.getElementById("slider");
+  const arrowSvg = document.getElementById("arrow-svg");
+  
+  const COLORS = ["#1570ef", "#d92d20", "#079455", "#7a5af8", "#0e9384", "#dd2590"];
+  arrowSvg.querySelector("defs").innerHTML = COLORS.map((c, i) =>
+    `<marker id="arrow-head-${i}" viewBox="0 0 10 10" refX="9" refY="5"
+      markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="${c}"></path>
+    </marker>`
+  ).join("");
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const btn = {
+    first: document.getElementById("first"),
+    prev: document.getElementById("prev"),
+    next: document.getElementById("next"),
+    last: document.getElementById("last"),
+  };
+
+  const lines = source.split("\n");
+  codeEl.innerHTML = lines.map((t, i) =>
+    `<div class="ln" data-line="${i + 1}"><span class="n">${i + 1}</span><span class="t">${escapeHtml(t)}</span></div>`
+  ).join("");
+
+  slider.max = Math.max(0, trace.length - 1);
+
+  let cursor = 0;
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
+  function labelFor(id, heapIndex) {
+    if (heapIndex.has(id)) return heapIndex.get(id);
+    const n = "h" + (heapIndex.size + 1);
+    heapIndex.set(id, n);
+    return n;
+  }
+
+  
+  
+  
+  const heapIndex = new Map();
+  const seeder = (val) => {
+    if (!val) return;
+    if (val.Ref) labelFor(val.Ref, heapIndex);
+    if (val.Fields) val.Fields.forEach(f => seeder(f.Value));
+    if (val.Elems) val.Elems.forEach(seeder);
+    if (val.Pairs) val.Pairs.forEach(p => { seeder(p.Key); seeder(p.Value); });
+  };
+  trace.forEach(step => {
+    (step.Frames || []).forEach(f => Object.values(f.Locals || {}).forEach(seeder));
+    Object.values(step.Globals || {}).forEach(seeder);
+    Object.keys(step.Heap || {}).forEach(id => labelFor(id, heapIndex));
+  });
+
+  function renderValue(v, heapIndex) {
+    if (!v || !v.Kind || v.Kind === "nil") {
+      return `<span class="nilv">nil</span>`;
+    }
+    if (v.Kind === "prim") {
+      return `<span class="prim">${escapeHtml(v.Prim || "")}</span>`;
+    }
+    if (v.Kind === "ref") {
+      const label = labelFor(v.Ref, heapIndex);
+      return `<span class="ref" data-ref="${escapeHtml(v.Ref)}">→ ${escapeHtml(label)}</span>`;
+    }
+    if (v.Kind === "struct") {
+      const fields = (v.Fields || []).map(f =>
+        `<div class="field"><span class="name">${escapeHtml(f.Name)}</span>${renderValue(f.Value, heapIndex)}</div>`
+      ).join("");
+      return `<div class="struct">${fields}</div>`;
+    }
+    if (v.Kind === "slice" && v.Ref) {
+      const label = labelFor(v.Ref, heapIndex);
+      const lo = v.Offset || 0;
+      const len = v.Len || 0;
+      return `<span class="type">len ${len} · cap ${v.Cap || 0}</span> <span class="ref" data-ref="${escapeHtml(v.Ref)}" data-offset="${lo}" data-len="${len}">→ ${escapeHtml(label)}[${lo}:${lo + len}]</span>`;
+    }
+    if (v.Kind === "array" && v.Cap) {
+      const cells = (v.Elems || []).map((e, i) => e.Kind
+        ? `<div class="cell"><span class="idx">${i}</span>${renderValue(e, heapIndex)}</div>`
+        : `<div class="cell spare"><span class="idx">${i}</span>&nbsp;</div>`
+      );
+      for (let i = cells.length; i < v.Cap; i++) {
+        cells.push(`<div class="cell spare"><span class="idx">${i}</span>&nbsp;</div>`);
+      }
+      return `<div class="cells" style="grid-template-columns: repeat(${cells.length}, minmax(32px, auto))">${cells.join("")}</div>`;
+    }
+    if (v.Kind === "slice" || v.Kind === "array") {
+      const items = (v.Elems || []).map((e, i) =>
+        `<div class="item">[${i}] ${renderValue(e, heapIndex)}</div>`
+      ).join("");
+      return `<div class="${v.Kind}">${items}</div>`;
+    }
+    if (v.Kind === "map") {
+      const pairs = (v.Pairs || []).map(p =>
+        `<div class="pair">${renderValue(p.Key, heapIndex)}<span class="arrow">:</span>${renderValue(p.Value, heapIndex)}</div>`
+      ).join("");
+      return `<div class="map">${pairs}</div>`;
+    }
+    return `<span class="prim">${escapeHtml(JSON.stringify(v))}</span>`;
+  }
+
+  function sameJSON(a, b) {
+    return JSON.stringify(a || null) === JSON.stringify(b || null);
+  }
+
+  function renderSlot(name, value, prevValue, heapIndex) {
+    const changed = !sameJSON(value, prevValue);
+    return `<div class="slot${changed ? " changed" : ""}">
+      <span class="k">${escapeHtml(name)}</span>
+      <span class="v">${renderValue(value, heapIndex)}</span>
+    </div>`;
+  }
+
+  function renderMap(values, prev, heapIndex) {
+    const keys = Object.keys(values || {}).sort();
+    if (keys.length === 0) return `<div class="empty">(none)</div>`;
+    return keys.map(k => renderSlot(k, values[k], prev && prev[k], heapIndex)).join("");
+  }
+
+  function render() {
+    if (trace.length === 0) {
+      counter.textContent = "Step 0 of 0";
+      return;
+    }
+    const step = trace[cursor];
+    const prev = cursor > 0 ? trace[cursor - 1] : null;
+
+    codeEl.querySelectorAll(".ln.next, .ln.past").forEach(el => {
+      el.classList.remove("next", "past");
+    });
+    if (step.PrevLine) {
+      const pastEl = codeEl.querySelector(`.ln[data-line="${step.PrevLine}"]`);
+      if (pastEl) pastEl.classList.add("past");
+    }
+    const lineEl = codeEl.querySelector(`.ln[data-line="${step.Line}"]`);
+    if (lineEl) {
+      lineEl.classList.add("next");
+      lineEl.scrollIntoView({ block: "nearest" });
+    }
+
+
+    
+    const prevFrames = prev && prev.Frames ? prev.Frames : [];
+    const frames = step.Frames || [];
+    const framesHTML = frames.map((f, i) => {
+      const prevLocals = prevFrames[i] && prevFrames[i].Func === f.Func ? prevFrames[i].Locals : null;
+      const slots = renderMap(f.Locals, prevLocals, heapIndex);
+      return `<div class="frame${i === 0 ? " top" : ""}">
+        <div class="frame-head">frame <span class="name">${escapeHtml(f.Func || "(unknown)")}</span></div>
+        <div class="frame-body">${slots}</div>
+      </div>`;
+    }).join("");
+
+    const prevGlobals = prev ? prev.Globals : null;
+    const globalsHTML = `<div class="frame">
+      <div class="frame-head">globals</div>
+      <div class="frame-body">${renderMap(step.Globals, prevGlobals, heapIndex)}</div>
+    </div>`;
+
+    framesEl.innerHTML = (framesHTML || `<div class="empty">(no user frames)</div>`) + globalsHTML;
+
+    
+    const heap = step.Heap || {};
+    const heapIDs = Array.from(heapIndex.keys()).filter(id => heap[id] !== undefined);
+    if (heapIDs.length === 0) {
+      heapEl.innerHTML = `<div class="empty">(empty)</div>`;
+    } else {
+      heapEl.innerHTML = heapIDs.map(id => {
+        const label = heapIndex.get(id);
+        return `<div class="heap-obj" data-id="${escapeHtml(id)}">
+          <div class="id">${escapeHtml(label)} <span class="type">${escapeHtml(heap[id].Type || "")}</span></div>
+          ${renderValue(heap[id], heapIndex)}
+        </div>`;
+      }).join("");
+      colorRefs();
+      drawBrackets();
+    }
+
+    const len = Math.min(step.StdoutLen || 0, fullOutput.length);
+    if (len === 0) {
+      stdoutEl.innerHTML = `<span class="empty">(no output yet)</span>`;
+    } else {
+      stdoutEl.textContent = fullOutput.slice(0, len);
+    }
+
+    counter.textContent = `Step ${cursor + 1} of ${trace.length}`;
+    slider.value = cursor;
+    btn.first.disabled = btn.prev.disabled = cursor === 0;
+    btn.next.disabled = btn.last.disabled = cursor === trace.length - 1;
+
+    requestAnimationFrame(drawArrows);
+  }
+
+  function drawArrows() {
+    arrowSvg.querySelectorAll("path.arrow").forEach(p => p.remove());
+
+    const refs = document.querySelectorAll("[data-ref]");
+    const framesRect = framesEl.getBoundingClientRect();
+    const heapRect = heapEl.getBoundingClientRect();
+
+    refs.forEach(refEl => {
+      const id = refEl.getAttribute("data-ref");
+      const target = heapEl.querySelector(`.heap-obj[data-id="${CSS.escape(id)}"]`);
+      if (!target) return;
+
+      const bracket = viewBracket(refEl);
+      const s = refEl.getBoundingClientRect();
+      const t = (bracket || target).getBoundingClientRect();
+
+      const inFrames = s.right <= framesRect.right + 1 && s.left >= framesRect.left - 1;
+      const inHeap = s.right <= heapRect.right + 1 && s.left >= heapRect.left - 1;
+      const visibleInParent =
+        (inFrames && s.top >= framesRect.top - 2 && s.bottom <= framesRect.bottom + 2) ||
+        (inHeap && s.top >= heapRect.top - 2 && s.bottom <= heapRect.bottom + 2);
+      const targetVisible = t.top >= heapRect.top - 2 && t.bottom <= heapRect.bottom + 2;
+      if (!visibleInParent || !targetVisible) return;
+
+      const sx = s.right + 2;
+      const sy = (s.top + s.bottom) / 2;
+      const path = document.createElementNS(SVG_NS, "path");
+      if (bracket) {
+        
+        const tx = (t.left + t.right) / 2;
+        const ty = t.bottom + 2;
+        const c1x = sx + Math.max(30, (tx - sx) * 0.55);
+        path.setAttribute("d", `M ${sx} ${sy} C ${c1x} ${sy}, ${tx} ${ty + 40}, ${tx} ${ty}`);
+      } else {
+        const tx = t.left - 2;
+        const ty = (t.top + t.bottom) / 2;
+        const c1x = sx + Math.max(30, (tx - sx) * 0.55);
+        const c2x = tx - Math.max(30, (tx - sx) * 0.55);
+        path.setAttribute("d", `M ${sx} ${sy} C ${c1x} ${sy}, ${c2x} ${ty}, ${tx} ${ty}`);
+      }
+      const color = +refEl.getAttribute("data-color");
+      path.setAttribute("class", "arrow");
+      path.setAttribute("stroke", COLORS[color]);
+      path.setAttribute("stroke-width", "1.5");
+      path.setAttribute("fill", "none");
+      path.setAttribute("opacity", "0.75");
+      path.setAttribute("marker-end", `url(#arrow-head-${color})`);
+      arrowSvg.appendChild(path);
+    });
+  }
+
+  
+  function viewCells(refEl, obj) {
+    const cells = obj.querySelector(":scope > .cells");
+    if (!cells || !refEl.hasAttribute("data-offset")) return [];
+    const lo = +refEl.getAttribute("data-offset");
+    const len = Math.max(1, +refEl.getAttribute("data-len"));
+    return Array.from(cells.querySelectorAll(":scope > .cell")).slice(lo, lo + len);
+  }
+
+  function viewBracket(refEl) {
+    const view = refEl.getAttribute("data-view");
+    return view === null ? null : heapEl.querySelector(`.bracket[data-view="${view}"]`);
+  }
+
+  function colorRefs() {
+    document.querySelectorAll("[data-ref]").forEach((refEl, i) => {
+      refEl.setAttribute("data-color", i % COLORS.length);
+      refEl.style.color = COLORS[i % COLORS.length];
+    });
+  }
+
+  
+  function drawBrackets() {
+    document.querySelectorAll("[data-offset]").forEach((refEl, i) => {
+      const id = refEl.getAttribute("data-ref");
+      const obj = heapEl.querySelector(`.heap-obj[data-id="${CSS.escape(id)}"]`);
+      const cells = obj && obj.querySelector(":scope > .cells");
+      if (!cells) return;
+      const lo = +refEl.getAttribute("data-offset");
+      const len = +refEl.getAttribute("data-len");
+      const bracket = document.createElement("div");
+      bracket.className = len === 0 ? "bracket empty" : "bracket";
+      bracket.style.gridColumn = `${lo + 1} / span ${Math.max(1, len)}`;
+      bracket.style.borderColor = COLORS[+refEl.getAttribute("data-color")];
+      bracket.setAttribute("data-view", i);
+      refEl.setAttribute("data-view", i);
+      cells.appendChild(bracket);
+    });
+  }
+
+  document.addEventListener("mouseover", e => {
+    const ref = e.target.closest("[data-ref]");
+    if (!ref) return;
+    ref.classList.add("highlighted");
+    const id = ref.getAttribute("data-ref");
+    const obj = heapEl.querySelector(`.heap-obj[data-id="${CSS.escape(id)}"]`);
+    if (!obj) return;
+    obj.classList.add("highlighted");
+    viewCells(ref, obj).forEach(c => c.classList.add("highlighted"));
+    const bracket = viewBracket(ref);
+    if (bracket) bracket.classList.add("highlighted");
+  });
+  document.addEventListener("mouseout", e => {
+    const ref = e.target.closest("[data-ref]");
+    if (!ref) return;
+    ref.classList.remove("highlighted");
+    const id = ref.getAttribute("data-ref");
+    const obj = heapEl.querySelector(`.heap-obj[data-id="${CSS.escape(id)}"]`);
+    if (!obj) return;
+    obj.classList.remove("highlighted");
+    viewCells(ref, obj).forEach(c => c.classList.remove("highlighted"));
+    const bracket = viewBracket(ref);
+    if (bracket) bracket.classList.remove("highlighted");
+  });
+
+  framesEl.addEventListener("scroll", drawArrows);
+  heapEl.addEventListener("scroll", drawArrows);
+  window.addEventListener("scroll", drawArrows, { passive: true });
+  window.addEventListener("resize", drawArrows);
+
+  function go(i) {
+    cursor = Math.max(0, Math.min(trace.length - 1, i));
+    render();
+  }
+
+  btn.first.addEventListener("click", () => go(0));
+  btn.prev.addEventListener("click", () => go(cursor - 1));
+  btn.next.addEventListener("click", () => go(cursor + 1));
+  btn.last.addEventListener("click", () => go(trace.length - 1));
+  slider.addEventListener("input", e => go(+e.target.value));
+  document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") go(cursor - 1);
+    else if (e.key === "ArrowRight") go(cursor + 1);
+    else if (e.key === "Home") go(0);
+    else if (e.key === "End") go(trace.length - 1);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
