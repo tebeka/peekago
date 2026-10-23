@@ -127,14 +127,14 @@ button:disabled {
   filter: brightness(1.04);
 }
 
-.compose-actions {
+.panel-tools {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
+  align-items: center;
+  gap: 12px;
 }
 
 .CodeMirror {
-  height: 640px;
+  height: auto;
   border: 1px solid var(--border);
   border-radius: 18px;
   overflow: hidden;
@@ -194,7 +194,7 @@ button:disabled {
 
 .status {
   min-height: 1.5rem;
-  margin: 12px 0 0;
+  margin: 0 0 12px;
   color: var(--muted);
 }
 
@@ -228,12 +228,13 @@ button:disabled {
 }
 
 @media (max-width: 980px) {
-  .CodeMirror {
-    height: 420px;
+  .panel-header {
+    flex-wrap: wrap;
   }
 
-  .compose-actions {
-    justify-content: stretch;
+  .panel-tools {
+    flex-wrap: wrap;
+    width: 100%;
   }
 
   .primary-action {

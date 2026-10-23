@@ -19,42 +19,27 @@
         <form class="panel compose compose-single" method="post" action="/view">
           <div class="panel-header">
             <h2>Source</h2>
-            <label class="sr-only" for="example-select">Load example</label>
-            <select id="example-select">
-              <option value="">Load example…</option>
-              <option value="linked-list">Linked list</option>
-              <option value="pointer-aliasing">Pointer aliasing</option>
-              <option value="recursion">Recursion</option>
-              <option value="stdout">Stdout</option>
-              <option value="slice-mutation">Slice mutation</option>
-              <option value="slice-view">Slice view</option>
-              <option value="map-grow">Map grow</option>
-            </select>
+            <div class="panel-tools">
+              <label class="sr-only" for="example-select">Load example</label>
+              <select id="example-select">
+                <option value="">Load example…</option>
+                <option value="linked-list">Linked list</option>
+                <option value="pointer-aliasing">Pointer aliasing</option>
+                <option value="recursion">Recursion</option>
+                <option value="stdout">Stdout</option>
+                <option value="slice-mutation">Slice mutation</option>
+                <option value="slice-view">Slice view</option>
+                <option value="map-grow">Map grow</option>
+              </select>
+              <button id="run-button" class="primary-action" type="submit">
+                <span class="button-label">Trace and Open Viewer</span>
+                <span class="spinner" aria-hidden="true"></span>
+              </button>
+            </div>
           </div>
-          <label class="sr-only" for="editor-input">Go source code</label>
-          <textarea id="editor-input" name="code" spellcheck="false">package main
-
-import "fmt"
-
-var total = 1
-
-func add(n int) int {
-	total += n
-	return total
-}
-
-func main() {
-	x := 2
-	y := add(x)
-	fmt.Println(y)
-}</textarea>
           <p id="status" class="status">Ready.</p>
-          <div class="compose-actions">
-            <button id="run-button" class="primary-action" type="submit">
-              <span class="button-label">Trace and Open Viewer</span>
-              <span class="spinner" aria-hidden="true"></span>
-            </button>
-          </div>
+          <label class="sr-only" for="editor-input">Go source code</label>
+          <textarea id="editor-input" name="code" spellcheck="false"></textarea>
         </form>
       </section>
     </main>

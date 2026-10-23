@@ -30,7 +30,7 @@ const editor = CodeMirror.fromTextArea(elements.editorInput, {
   },
 });
 
-editor.setSize('100%', 640);
+editor.setSize('100%', 'auto');
 
 elements.runButton.form.addEventListener('submit', () => {
   setStatus('Tracing...');
@@ -47,6 +47,15 @@ elements.exampleSelect.addEventListener('change', async () => {
     return;
   }
 
+  await loadExample(name);
+});
+
+// The browser may restore the user's code when navigating back from the viewer.
+if (!editor.getValue()) {
+  loadExample('slice-view');
+}
+
+async function loadExample(name) {
   const response = await fetch(`/_examples/${name}.go`);
   if (!response.ok) {
     setStatus(`Failed to load example: ${response.statusText}`, true);
@@ -55,7 +64,7 @@ elements.exampleSelect.addEventListener('change', async () => {
 
   editor.setValue(await response.text());
   setStatus('Ready.');
-});
+}
 
 function setStatus(message, isError = false) {
   elements.status.textContent = message;
