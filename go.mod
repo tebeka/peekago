@@ -1,3 +1,3 @@
-module pkgo
+module github.com/tebeka/peekago
 
-go 1.26
+go 1.27
