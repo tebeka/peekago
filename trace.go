@@ -13,7 +13,7 @@ const (
 	traceFileName    = "main.go"
 	traceModuleName  = "pkgo-trace"
 	defaultStepLimit = 50
-	debugServerWait  = 5
+	debugServerWait  = 30 // building with uncached packages such as net/http is slow
 	detachTimeout    = 2
 	traceTimeout     = 10
 	maxStringLen     = 128
@@ -90,12 +90,12 @@ func TraceSource(ctx context.Context, src string) (*Trace, error) {
 		ctx = context.Background()
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, traceTimeout*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, (debugServerWait+traceTimeout)*time.Second)
 	defer cancel()
 
 	trace, err := traceSource(ctx, src)
 	// The delve connection deadline can fire a moment before ctx is marked done.
-	if err != nil && (ctx.Err() != nil || errors.Is(err, os.ErrDeadlineExceeded)) {
+	if err != nil && (ctx.Err() != nil || errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded)) {
 		return trace, errTraceTimeout
 	}
 
@@ -133,6 +133,10 @@ func traceSource(ctx context.Context, src string) (*Trace, error) {
 	}
 	defer dlv.close()
 
+	// Start the trace timeout after the build so slow builds don't eat into the program's run time.
+	ctx, cancel := context.WithTimeout(ctx, traceTimeout*time.Second)
+	defer cancel()
+
 	client, err := dialRPC(ctx, addr)
 	if err != nil {
 		return nil, fmt.Errorf("connect to delve: %w", err)
@@ -142,6 +146,13 @@ func traceSource(ctx context.Context, src string) (*Trace, error) {
 	if err := client.setAPIVersion(ctx, 2); err != nil {
 		return nil, fmt.Errorf("set delve api version: %w", err)
 	}
+
+	// delve runs the program in its own process group, kill it to also kill processes the program started.
+	pid, err := client.processPid(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get program pid: %w", err)
+	}
+	defer killGroup(pid)
 
 	if err := client.createBreakpoint(ctx, "main.main"); err != nil {
 		return nil, fmt.Errorf("create main breakpoint: %w", err)

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -57,6 +58,12 @@ func startDelve(ctx context.Context, workDir, addr, stdoutPath string) (*delvePr
 	}
 	cmd := exec.CommandContext(ctx, "dlv", args...)
 	cmd.Dir = workDir
+	cmd.Env = traceEnv()
+	// Run in a process group so killing it also kills processes the traced program started.
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.Cancel = func() error {
+		return killGroup(cmd.Process.Pid)
+	}
 	output := &bytes.Buffer{}
 	cmd.Stdout = output
 	cmd.Stderr = output
@@ -91,10 +98,10 @@ func startDelve(ctx context.Context, workDir, addr, stdoutPath string) (*delvePr
 
 			return nil, fmt.Errorf("%w: %s", err, strings.TrimSpace(output.String()))
 		case <-ctx.Done():
-			_ = cmd.Process.Kill()
+			_ = killGroup(cmd.Process.Pid)
 			return nil, ctx.Err()
 		case <-deadline.C:
-			_ = cmd.Process.Kill()
+			_ = killGroup(cmd.Process.Pid)
 			return nil, fmt.Errorf("delve did not start listening: %s", strings.TrimSpace(output.String()))
 		case <-tick.C:
 			conn, err := net.DialTimeout("tcp", addr, 50*time.Millisecond)
@@ -111,11 +118,28 @@ func (p *delveProcess) close() {
 		return
 	}
 
-	_ = p.cmd.Process.Kill()
+	_ = killGroup(p.cmd.Process.Pid)
 	select {
 	case <-p.waitErr:
 	case <-time.After(250 * time.Millisecond):
 	}
+}
+
+// killGroup kills the process group led by pid.
+func killGroup(pid int) error {
+	return syscall.Kill(-pid, syscall.SIGKILL)
+}
+
+// traceEnv returns a minimal environment so the traced program can't read the server's environment.
+func traceEnv() []string {
+	env := []string{"CGO_ENABLED=0"}
+	for _, key := range []string{"PATH", "HOME", "TMPDIR", "GOCACHE", "GOPATH"} {
+		if value, ok := os.LookupEnv(key); ok {
+			env = append(env, key+"="+value)
+		}
+	}
+
+	return env
 }
 
 func (p *delveProcess) String() string {

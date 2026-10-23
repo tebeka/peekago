@@ -19,6 +19,8 @@ import (
 var options struct {
 	addr    string
 	htmlOut string
+	runner  string
+	image   string
 }
 
 func validateAddr(addr string) error {
@@ -29,6 +31,8 @@ func validateAddr(addr string) error {
 func main() {
 	flag.StringVar(&options.addr, "http", ":8080", "HTTP listen address")
 	flag.StringVar(&options.htmlOut, "html", "", "write an interactive HTML viewer to the given path instead of JSON")
+	flag.StringVar(&options.runner, "runner", "exec", "how the web server runs programs: exec (directly, unsandboxed) or docker (in a sandboxed container)")
+	flag.StringVar(&options.image, "image", "peek-a-go", "docker image for the docker runner")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [flags] [go-source-file]\n\n", path.Base(os.Args[0]))
 		fmt.Fprintln(os.Stderr, "Without a source file, start the Peek-A-Go web server.")
@@ -49,12 +53,8 @@ func main() {
 		os.Exit(2)
 	}
 
-	if _, err := exec.LookPath("dlv"); err != nil {
-		fmt.Fprintf(os.Stderr, "error: `dlv` executable not found.\n")
-		os.Exit(1)
-	}
-
 	if flag.NArg() == 1 {
+		requireExecutable("dlv")
 		if err := traceToFile(flag.Arg(0)); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
@@ -62,10 +62,28 @@ func main() {
 		return
 	}
 
-	server := newServer(TraceSource)
+	var trace traceFunc
+	switch options.runner {
+	case "exec":
+		requireExecutable("dlv")
+		trace = TraceSource
+	case "docker":
+		requireExecutable("docker")
+		trace = func(ctx context.Context, src string) (*Trace, error) {
+			return TraceDocker(ctx, options.image, src)
+		}
+	default:
+		fmt.Fprintf(os.Stderr, "error: unknown -runner %q (want exec or docker)\n", options.runner)
+		os.Exit(2)
+	}
+
+	server := newServer(trace)
 	httpServer := &http.Server{
-		Addr:    options.addr,
-		Handler: server.routes(),
+		Addr:              options.addr,
+		Handler:           server.routes(),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      (debugServerWait + traceTimeout + dockerOverhead + 5) * time.Second,
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -82,9 +100,16 @@ func main() {
 		}
 	}()
 
-	slog.Info("server starting", "address", options.addr)
+	slog.Info("server starting", "address", options.addr, "runner", options.runner)
 	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		os.Exit(1)
+	}
+}
+
+func requireExecutable(name string) {
+	if _, err := exec.LookPath(name); err != nil {
+		fmt.Fprintf(os.Stderr, "error: `%s` executable not found.\n", name)
 		os.Exit(1)
 	}
 }

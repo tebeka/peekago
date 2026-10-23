@@ -254,3 +254,50 @@ func mustJSON(t *testing.T, value any) string {
 
 	return string(data)
 }
+
+func TestTraceSourceHidesEnv(t *testing.T) {
+	ensureDelve(t)
+	t.Setenv("PKGO_SECRET", "s3cret")
+
+	src := `package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	fmt.Println(os.Getenv("PKGO_SECRET"))
+}
+`
+	trace, err := TraceSource(context.Background(), src)
+	if err != nil {
+		t.Fatalf("TraceSource() error = %v", err)
+	}
+
+	if strings.Contains(trace.Output, "s3cret") {
+		t.Fatalf("traced program read the server environment: %q", trace.Output)
+	}
+}
+
+func TestTraceSourceKillsChildren(t *testing.T) {
+	ensureDelve(t)
+
+	src := `package main
+
+import "os/exec"
+
+func main() {
+	exec.Command("sleep", "31337").Start()
+}
+`
+	if _, err := TraceSource(context.Background(), src); err != nil {
+		t.Fatalf("TraceSource() error = %v", err)
+	}
+
+	// pgrep exits with 1 when no process matches.
+	if out, err := exec.Command("pgrep", "-f", "sleep 31337").Output(); err == nil {
+		exec.Command("pkill", "-f", "sleep 31337").Run()
+		t.Fatalf("child process survived the trace: %s", out)
+	}
+}

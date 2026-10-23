@@ -144,3 +144,48 @@ func TestServerTraceErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestServerTraceBusy(t *testing.T) {
+	srv := newServer(func(context.Context, string) (*Trace, error) {
+		return &Trace{}, nil
+	})
+	for range maxTraces {
+		srv.slots <- struct{}{}
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/trace", strings.NewReader(`{"code":"package main"}`))
+	rec := httptest.NewRecorder()
+	srv.routes().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusServiceUnavailable)
+	}
+}
+
+func TestServerBodyTooLarge(t *testing.T) {
+	srv := newServer(func(context.Context, string) (*Trace, error) {
+		return &Trace{}, nil
+	})
+	code := strings.Repeat("x", maxBodySize)
+
+	body, err := json.Marshal(traceRequest{Code: code})
+	if err != nil {
+		t.Fatalf("json.Marshal() error = %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/trace", strings.NewReader(string(body)))
+	rec := httptest.NewRecorder()
+	srv.routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("/trace status = %d, want %d", rec.Code, http.StatusBadRequest)
+	}
+
+	form := url.Values{"code": {code}}
+	req = httptest.NewRequest(http.MethodPost, "/view", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec = httptest.NewRecorder()
+	srv.routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("/view status = %d, want %d", rec.Code, http.StatusBadRequest)
+	}
+}

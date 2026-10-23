@@ -67,6 +67,18 @@ func (c *rpcClient) setAPIVersion(ctx context.Context, version int) error {
 	}{APIVersion: version}, &struct{}{})
 }
 
+func (c *rpcClient) processPid(ctx context.Context) (int, error) {
+	var out struct {
+		Pid int
+	}
+
+	if err := c.callContext(ctx, "RPCServer.ProcessPid", struct{}{}, &out); err != nil {
+		return 0, err
+	}
+
+	return out.Pid, nil
+}
+
 func (c *rpcClient) createBreakpoint(ctx context.Context, loc string) error {
 	var out struct {
 		Breakpoint breakpoint `json:"Breakpoint"`

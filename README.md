@@ -50,6 +50,23 @@ go build -o peek-a-go .
 ./peek-a-go -http :8080
 ```
 
+## Running Untrusted Code
+
+By default (`-runner exec`) the server runs submitted programs directly as the server's user. This is fine on your own machine, but **anyone who can reach the server can run arbitrary code**.
+
+To expose the server to others, use the docker runner. Each trace runs in a throwaway container with no network, a read-only root filesystem, no capabilities except `SYS_PTRACE`, and memory, CPU and process limits. Only Docker is needed on the host, not Go or Delve.
+
+```bash
+docker build -t peek-a-go .
+go run . -runner docker
+```
+
+Use `-image` to pick another image. Rebuild the image after changing the tracer code.
+
+At most 4 traces run at once; extra requests get `503 Service Unavailable`.
+
+## Command Line
+
 Trace a single file from the command line and print the trace as JSON:
 
 ```bash
