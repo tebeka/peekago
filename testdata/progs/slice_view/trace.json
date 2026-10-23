@@ -1,0 +1,330 @@
+{
+  "Source": "package main\n\nfunc main() {\n\txs := []int{1, 2, 3, 4, 5}\n\tys := xs[1:3]\n\txs = append(xs, 6)\n\txs[0] = 99\n\n\t_ = xs\n\t_ = ys\n}\n",
+  "Steps": [
+    {
+      "File": "main.go",
+      "Line": 3,
+      "PrevLine": 0,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 4,
+      "PrevLine": 3,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 5,
+      "PrevLine": 4,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "xs": {
+              "Kind": "slice",
+              "Type": "[]int",
+              "Ref": "#1",
+              "Len": 5,
+              "Cap": 5
+            }
+          }
+        }
+      ],
+      "Globals": {},
+      "Heap": {
+        "#1": {
+          "Kind": "array",
+          "Type": "[]int",
+          "Elems": [
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "4"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "5"
+            }
+          ],
+          "Cap": 5
+        }
+      },
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 6,
+      "PrevLine": 5,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "xs": {
+              "Kind": "slice",
+              "Type": "[]int",
+              "Ref": "#1",
+              "Len": 5,
+              "Cap": 5
+            },
+            "ys": {
+              "Kind": "slice",
+              "Type": "[]int",
+              "Ref": "#1",
+              "Len": 2,
+              "Cap": 4,
+              "Offset": 1
+            }
+          }
+        }
+      ],
+      "Globals": {},
+      "Heap": {
+        "#1": {
+          "Kind": "array",
+          "Type": "[]int",
+          "Elems": [
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "4"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "5"
+            }
+          ],
+          "Cap": 5
+        }
+      },
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 7,
+      "PrevLine": 6,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "xs": {
+              "Kind": "slice",
+              "Type": "[]int",
+              "Ref": "#2",
+              "Len": 6,
+              "Cap": 10
+            },
+            "ys": {
+              "Kind": "slice",
+              "Type": "[]int",
+              "Ref": "#1",
+              "Len": 2,
+              "Cap": 4,
+              "Offset": 1
+            }
+          }
+        }
+      ],
+      "Globals": {},
+      "Heap": {
+        "#1": {
+          "Kind": "array",
+          "Type": "[]int",
+          "Elems": [
+            {},
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          ],
+          "Cap": 5
+        },
+        "#2": {
+          "Kind": "array",
+          "Type": "[]int",
+          "Elems": [
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "4"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "5"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "6"
+            }
+          ],
+          "Cap": 10
+        }
+      },
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 11,
+      "PrevLine": 7,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "xs": {
+              "Kind": "slice",
+              "Type": "[]int",
+              "Ref": "#2",
+              "Len": 6,
+              "Cap": 10
+            },
+            "ys": {
+              "Kind": "slice",
+              "Type": "[]int",
+              "Ref": "#1",
+              "Len": 2,
+              "Cap": 4,
+              "Offset": 1
+            }
+          }
+        }
+      ],
+      "Globals": {},
+      "Heap": {
+        "#1": {
+          "Kind": "array",
+          "Type": "[]int",
+          "Elems": [
+            {},
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          ],
+          "Cap": 5
+        },
+        "#2": {
+          "Kind": "array",
+          "Type": "[]int",
+          "Elems": [
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "99"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "4"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "5"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "6"
+            }
+          ],
+          "Cap": 10
+        }
+      },
+      "StdoutLen": 0
+    }
+  ],
+  "Output": ""
+}

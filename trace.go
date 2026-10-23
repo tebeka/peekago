@@ -53,6 +53,12 @@ type Value struct {
 	Fields []Field `json:"Fields,omitempty"`
 	Elems  []Value `json:"Elems,omitempty"`
 	Pairs  []Pair  `json:"Pairs,omitempty"`
+	Len    int64   `json:"Len,omitempty"`
+	Cap    int64   `json:"Cap,omitempty"`
+	Offset int64   `json:"Offset,omitempty"`
+
+	// elemSize is set on slice backing arrays only while a step is built, see shareBackingArrays.
+	elemSize uint64
 }
 
 type Field struct {
@@ -159,6 +165,7 @@ func TraceSource(ctx context.Context, src string) (*Trace, error) {
 	var (
 		seenState string
 		prevLine  int
+		arrays    = map[string]Value{} // slice backing arrays seen so far
 	)
 
 	for range defaultStepLimit {
@@ -175,7 +182,7 @@ func TraceSource(ctx context.Context, src string) (*Trace, error) {
 			return finalize(), exitedError(state)
 		}
 
-		step, ok, err := snapshot(ctx, client, state, prevLine)
+		step, ok, err := snapshot(ctx, client, state, prevLine, arrays)
 		if err != nil {
 			return finalize(), err
 		}

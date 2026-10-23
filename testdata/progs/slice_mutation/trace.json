@@ -43,29 +43,38 @@
             "xs": {
               "Kind": "slice",
               "Type": "[]int",
-              "Elems": [
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "1"
-                },
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "2"
-                },
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "3"
-                }
-              ]
+              "Ref": "#1",
+              "Len": 3,
+              "Cap": 3
             }
           }
         }
       ],
       "Globals": {},
-      "Heap": {},
+      "Heap": {
+        "#1": {
+          "Kind": "array",
+          "Type": "[]int",
+          "Elems": [
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            }
+          ],
+          "Cap": 3
+        }
+      },
       "StdoutLen": 0
     },
     {
@@ -80,34 +89,43 @@
             "xs": {
               "Kind": "slice",
               "Type": "[]int",
-              "Elems": [
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "1"
-                },
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "2"
-                },
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "3"
-                },
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "4"
-                }
-              ]
+              "Ref": "#2",
+              "Len": 4,
+              "Cap": 6
             }
           }
         }
       ],
       "Globals": {},
-      "Heap": {},
+      "Heap": {
+        "#2": {
+          "Kind": "array",
+          "Type": "[]int",
+          "Elems": [
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "4"
+            }
+          ],
+          "Cap": 6
+        }
+      },
       "StdoutLen": 0
     },
     {
@@ -122,34 +140,43 @@
             "xs": {
               "Kind": "slice",
               "Type": "[]int",
-              "Elems": [
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "99"
-                },
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "2"
-                },
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "3"
-                },
-                {
-                  "Kind": "prim",
-                  "Type": "int",
-                  "Prim": "4"
-                }
-              ]
+              "Ref": "#2",
+              "Len": 4,
+              "Cap": 6
             }
           }
         }
       ],
       "Globals": {},
-      "Heap": {},
+      "Heap": {
+        "#2": {
+          "Kind": "array",
+          "Type": "[]int",
+          "Elems": [
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "99"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
+            },
+            {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "4"
+            }
+          ],
+          "Cap": 6
+        }
+      },
       "StdoutLen": 0
     }
   ],

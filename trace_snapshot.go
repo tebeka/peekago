@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -34,7 +35,7 @@ func advanceToUserFrame(ctx context.Context, client *rpcClient, state *debuggerS
 	return state, nil
 }
 
-func snapshot(ctx context.Context, client *rpcClient, state *debuggerState, prevLine int) (Step, bool, error) {
+func snapshot(ctx context.Context, client *rpcClient, state *debuggerState, prevLine int, arrays map[string]Value) (Step, bool, error) {
 	location := currentLocation(state)
 	if filepath.Base(location.File) != traceFileName || location.Line == 0 {
 		return Step{}, false, nil
@@ -92,6 +93,8 @@ func snapshot(ctx context.Context, client *rpcClient, state *debuggerState, prev
 
 		globals[name] = walkValue(global, heap)
 	}
+
+	shareBackingArrays(outFrames, globals, heap, arrays)
 
 	return Step{
 		File:     traceFileName,
@@ -244,11 +247,26 @@ func walkValue(v variable, heap map[string]Value) Value {
 		for _, child := range v.Children {
 			elems = append(elems, walkValue(child, heap))
 		}
-		kind := "slice"
 		if v.Kind == reflect.Array {
-			kind = "array"
+			return Value{Kind: "array", Type: v.Type, Elems: elems}
 		}
-		return Value{Kind: kind, Type: v.Type, Elems: elems}
+
+		if v.Base == 0 {
+			return Value{Kind: "slice", Type: v.Type, Elems: elems}
+		}
+
+		var elemSize uint64
+		if len(v.Children) >= 2 {
+			elemSize = v.Children[1].Addr - v.Children[0].Addr
+		}
+
+		// The backing array lives on the heap so slices sharing it point to the same object.
+		id := fmt.Sprintf("0x%x", v.Base)
+		if existing, ok := heap[id]; !ok || len(existing.Elems) < len(elems) {
+			heap[id] = Value{Kind: "array", Type: v.Type, Elems: elems, Cap: v.Cap, elemSize: elemSize}
+		}
+
+		return Value{Kind: "slice", Type: v.Type, Ref: id, Len: v.Len, Cap: v.Cap}
 
 	case reflect.Map:
 		if len(v.Children) == 0 && v.Len == 0 {
@@ -279,6 +297,150 @@ func walkValue(v variable, heap map[string]Value) Value {
 	}
 
 	return Value{Kind: "nil", Type: v.Type}
+}
+
+type sliceRegion struct {
+	id    string
+	start uint64
+	end   uint64
+	array Value
+	live  bool // false for arrays remembered from earlier steps
+}
+
+type sliceView struct {
+	id     string
+	offset int64
+}
+
+// shareBackingArrays merges slice backing arrays whose memory overlaps, so a
+// sub-slice such as xs[1:3] points into the same heap array as xs.
+// known holds the backing arrays seen in earlier steps, so ys keeps pointing
+// into xs's array after xs moves to a new one. It's updated with this step's arrays.
+func shareBackingArrays(frames []Frame, globals, heap, known map[string]Value) {
+	// Element size is known only for slices with 2+ elements, share it between slices of the same type.
+	sizes := map[string]uint64{}
+	for _, m := range []map[string]Value{known, heap} {
+		for _, v := range m {
+			if v.elemSize != 0 {
+				sizes[v.Type] = v.elemSize
+			}
+		}
+	}
+
+	var regions []sliceRegion
+	for id, v := range known {
+		if _, ok := heap[id]; ok {
+			continue
+		}
+
+		if r, ok := newSliceRegion(id, v, sizes[v.Type]); ok {
+			regions = append(regions, r)
+		}
+	}
+	for id, v := range heap {
+		r, ok := newSliceRegion(id, v, sizes[v.Type])
+		if !ok {
+			continue
+		}
+
+		r.live = true
+		regions = append(regions, r)
+		delete(heap, id)
+	}
+	sort.Slice(regions, func(i, j int) bool { return regions[i].start < regions[j].start })
+
+	views := map[string]sliceView{}
+	for i := 0; i < len(regions); {
+		first := regions[i]
+		end := first.end
+		live := first.live
+		j := i + 1
+		for j < len(regions) && regions[j].start < end && regions[j].array.Type == first.array.Type {
+			end = max(end, regions[j].end)
+			live = live || regions[j].live
+			j++
+		}
+
+		if !live {
+			i = j
+			continue
+		}
+
+		size := sizes[first.array.Type]
+		capacity := first.array.Cap
+		if size != 0 {
+			capacity = int64((end - first.start) / size)
+		}
+
+		var elems []Value
+		for _, r := range regions[i:j] {
+			var offset int64
+			if size != 0 {
+				offset = int64((r.start - first.start) / size)
+			}
+			for k, e := range r.array.Elems {
+				for int64(len(elems)) <= offset+int64(k) {
+					elems = append(elems, Value{})
+				}
+				elems[offset+int64(k)] = e
+			}
+			views[r.id] = sliceView{id: first.id, offset: offset}
+		}
+
+		heap[first.id] = Value{Kind: "array", Type: first.array.Type, Elems: elems, Cap: capacity}
+		known[first.id] = Value{Kind: "array", Type: first.array.Type, Cap: capacity, elemSize: size}
+		i = j
+	}
+
+	for _, frame := range frames {
+		for name, v := range frame.Locals {
+			frame.Locals[name] = linkSliceViews(v, views)
+		}
+	}
+	for name, v := range globals {
+		globals[name] = linkSliceViews(v, views)
+	}
+	for id, v := range heap {
+		heap[id] = linkSliceViews(v, views)
+	}
+}
+
+func newSliceRegion(id string, v Value, size uint64) (sliceRegion, bool) {
+	if v.Kind != "array" || v.Cap == 0 {
+		return sliceRegion{}, false
+	}
+
+	start, err := strconv.ParseUint(strings.TrimPrefix(id, "0x"), 16, 64)
+	if err != nil {
+		return sliceRegion{}, false
+	}
+
+	end := start + 1 // unknown element size: never overlaps another region
+	if size != 0 {
+		end = start + uint64(v.Cap)*size
+	}
+
+	return sliceRegion{id: id, start: start, end: end, array: v}, true
+}
+
+func linkSliceViews(v Value, views map[string]sliceView) Value {
+	if view, ok := views[v.Ref]; ok && v.Kind == "slice" {
+		v.Ref = view.id
+		v.Offset = view.offset
+	}
+
+	for i := range v.Fields {
+		v.Fields[i].Value = linkSliceViews(v.Fields[i].Value, views)
+	}
+	for i := range v.Elems {
+		v.Elems[i] = linkSliceViews(v.Elems[i], views)
+	}
+	for i := range v.Pairs {
+		v.Pairs[i].Key = linkSliceViews(v.Pairs[i].Key, views)
+		v.Pairs[i].Value = linkSliceViews(v.Pairs[i].Value, views)
+	}
+
+	return v
 }
 
 func heapID(v variable) string {
