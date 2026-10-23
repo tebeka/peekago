@@ -16,12 +16,12 @@
       </section>
 
       <section class="compose-only">
-        <div class="panel compose compose-single">
+        <form class="panel compose compose-single" method="post" action="/view">
           <div class="panel-header">
             <h2>Source</h2>
           </div>
           <label class="sr-only" for="editor-input">Go source code</label>
-          <textarea id="editor-input" spellcheck="false">package main
+          <textarea id="editor-input" name="code" spellcheck="false">package main
 
 import "fmt"
 
@@ -39,12 +39,12 @@ func main() {
 }</textarea>
           <p id="status" class="status">Ready.</p>
           <div class="compose-actions">
-            <button id="run-button" class="primary-action" type="button">
+            <button id="run-button" class="primary-action" type="submit">
               <span class="button-label">Trace and Open Viewer</span>
               <span class="spinner" aria-hidden="true"></span>
             </button>
           </div>
-        </div>
+        </form>
       </section>
     </main>
 

@@ -1,115 +1,109 @@
-[
-  {
-    "File": "main.go",
-    "Line": 3,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 4,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 5,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [
-          {
-            "Name": "a",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "1"
+{
+  "Source": "package main\n\nfunc main() {\n\ta := 1\n\tb := a + 2\n\ta = b + 3\n\t_ = a\n}\n",
+  "Steps": [
+    {
+      "File": "main.go",
+      "Line": 3,
+      "PrevLine": 0,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 4,
+      "PrevLine": 3,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 5,
+      "PrevLine": 4,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "a": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
             }
           }
-        ],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 6,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [
-          {
-            "Name": "a",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "1"
-            }
-          },
-          {
-            "Name": "b",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "3"
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 6,
+      "PrevLine": 5,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "a": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "1"
+            },
+            "b": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
             }
           }
-        ],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 8,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [
-          {
-            "Name": "a",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "6"
-            }
-          },
-          {
-            "Name": "b",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "3"
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 8,
+      "PrevLine": 6,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "a": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "6"
+            },
+            "b": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
             }
           }
-        ],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  }
-]
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    }
+  ],
+  "Output": ""
+}

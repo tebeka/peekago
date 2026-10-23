@@ -32,7 +32,7 @@ go run .
 Listen on another address:
 
 ```bash
-go run . -listen :9090
+go run . -http :9090
 ```
 
 Show help:
@@ -47,7 +47,13 @@ Build a binary:
 
 ```bash
 go build -o peek-a-go .
-./peek-a-go -listen :8080
+./peek-a-go -http :8080
+```
+
+Trace a single file from the command line and print the trace as JSON:
+
+```bash
+go run . path/to/program.go
 ```
 
 ## Web UI
@@ -56,8 +62,27 @@ The browser UI lets you:
 
 - paste or edit Go source
 - run the tracer
-- move backward and forward through the recorded steps
-- inspect the current line, locals, and globals
+- step through the trace in the HTML viewer
+
+## HTML Viewer
+
+Write an interactive step-through viewer instead of JSON:
+
+```bash
+go run . -html out.html path/to/program.go
+```
+
+The page shows the source, the call stack, the heap with pointer arrows, and stdout. Step with the buttons, the slider, or the arrow keys.
+
+Examples in [`docs`](docs):
+
+- [Linked list](docs/linked-list.html): pointer arrows from locals and struct fields
+- [Pointer aliasing](docs/pointer-aliasing.html): two pointers to the same heap object
+- [Recursion](docs/recursion.html): a multi-frame call stack
+- [Stdout](docs/stdout.html): program output so far, and package-level variables
+- [Slice mutation](docs/slice-mutation.html): `append` moving a slice to a new backing array
+- [Slice view](docs/slice-view.html): a sub-slice viewing part of another slice's backing array
+- [Map grow](docs/map-grow.html): adding a key to a map
 
 ## JSON API
 
@@ -69,7 +94,7 @@ Request body:
 
 ```json
 {
-  "code": "package main\n\nfunc main() {}\n"
+  "code": "package main\n\nfunc main() {\n\ta := 1\n}\n"
 }
 ```
 
@@ -77,19 +102,29 @@ Response body:
 
 ```json
 {
-  "steps": [
-    {
-      "File": "main.go",
-      "Line": 5,
-      "Function": "",
-      "Locals": {
-        "x": "2"
-      },
-      "Globals": {
-        "total": "3"
+  "trace": {
+    "Source": "package main\n\nfunc main() {\n\ta := 1\n}\n",
+    "Steps": [
+      {
+        "File": "main.go",
+        "Line": 5,
+        "PrevLine": 4,
+        "Function": "main.main",
+        "Frames": [
+          {
+            "Func": "main.main",
+            "Locals": {
+              "a": {"Kind": "prim", "Type": "int", "Prim": "1"}
+            }
+          }
+        ],
+        "Globals": {},
+        "Heap": {},
+        "StdoutLen": 0
       }
-    }
-  ]
+    ],
+    "Output": ""
+  }
 }
 ```
 

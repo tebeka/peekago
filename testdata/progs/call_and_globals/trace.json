@@ -1,342 +1,277 @@
-[
-  {
-    "File": "main.go",
-    "Line": 12,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:global",
-        "Name": "Global frame",
-        "Kind": "global",
-        "Bindings": [
-          {
-            "Name": "total",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "1"
-            }
-          }
-        ],
-        "IsCurrent": false
+{
+  "Source": "package main\n\nimport \"fmt\"\n\nvar total = 1\n\nfunc add(n int) int {\n\ttotal += n\n\treturn total\n}\n\nfunc main() {\n\tx := 2\n\ty := add(x)\n\tfmt.Println(y)\n}\n",
+  "Steps": [
+    {
+      "File": "main.go",
+      "Line": 12,
+      "PrevLine": 0,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {
+        "total": {
+          "Kind": "prim",
+          "Type": "int",
+          "Prim": "1"
+        }
       },
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 13,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:global",
-        "Name": "Global frame",
-        "Kind": "global",
-        "Bindings": [
-          {
-            "Name": "total",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "1"
-            }
-          }
-        ],
-        "IsCurrent": false
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 13,
+      "PrevLine": 12,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {
+        "total": {
+          "Kind": "prim",
+          "Type": "int",
+          "Prim": "1"
+        }
       },
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 14,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:global",
-        "Name": "Global frame",
-        "Kind": "global",
-        "Bindings": [
-          {
-            "Name": "total",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "1"
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 14,
+      "PrevLine": 13,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "x": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
             }
           }
-        ],
-        "IsCurrent": false
+        }
+      ],
+      "Globals": {
+        "total": {
+          "Kind": "prim",
+          "Type": "int",
+          "Prim": "1"
+        }
       },
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [
-          {
-            "Name": "x",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "2"
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 7,
+      "PrevLine": 14,
+      "Function": "main.add",
+      "Frames": [
+        {
+          "Func": "main.add",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
             }
           }
-        ],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 7,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:global",
-        "Name": "Global frame",
-        "Kind": "global",
-        "Bindings": [
-          {
-            "Name": "total",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "1"
+        },
+        {
+          "Func": "main.main",
+          "Locals": {
+            "x": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
             }
           }
-        ],
-        "IsCurrent": false
+        }
+      ],
+      "Globals": {
+        "total": {
+          "Kind": "prim",
+          "Type": "int",
+          "Prim": "1"
+        }
       },
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [
-          {
-            "Name": "n",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "2"
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 8,
+      "PrevLine": 7,
+      "Function": "main.add",
+      "Frames": [
+        {
+          "Func": "main.add",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
             }
           }
-        ],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 8,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:global",
-        "Name": "Global frame",
-        "Kind": "global",
-        "Bindings": [
-          {
-            "Name": "total",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "1"
+        },
+        {
+          "Func": "main.main",
+          "Locals": {
+            "x": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
             }
           }
-        ],
-        "IsCurrent": false
+        }
+      ],
+      "Globals": {
+        "total": {
+          "Kind": "prim",
+          "Type": "int",
+          "Prim": "1"
+        }
       },
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [
-          {
-            "Name": "n",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "2"
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 9,
+      "PrevLine": 8,
+      "Function": "main.add",
+      "Frames": [
+        {
+          "Func": "main.add",
+          "Locals": {
+            "n": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
             }
           }
-        ],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 9,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:global",
-        "Name": "Global frame",
-        "Kind": "global",
-        "Bindings": [
-          {
-            "Name": "total",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "3"
+        },
+        {
+          "Func": "main.main",
+          "Locals": {
+            "x": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
             }
           }
-        ],
-        "IsCurrent": false
+        }
+      ],
+      "Globals": {
+        "total": {
+          "Kind": "prim",
+          "Type": "int",
+          "Prim": "3"
+        }
       },
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [
-          {
-            "Name": "n",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "2"
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 14,
+      "PrevLine": 9,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "x": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
             }
           }
-        ],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 14,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:global",
-        "Name": "Global frame",
-        "Kind": "global",
-        "Bindings": [
-          {
-            "Name": "total",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "3"
-            }
-          }
-        ],
-        "IsCurrent": false
+        }
+      ],
+      "Globals": {
+        "total": {
+          "Kind": "prim",
+          "Type": "int",
+          "Prim": "3"
+        }
       },
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [
-          {
-            "Name": "x",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "2"
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 15,
+      "PrevLine": 14,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "x": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            "y": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
             }
           }
-        ],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 15,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:global",
-        "Name": "Global frame",
-        "Kind": "global",
-        "Bindings": [
-          {
-            "Name": "total",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "3"
-            }
-          }
-        ],
-        "IsCurrent": false
+        }
+      ],
+      "Globals": {
+        "total": {
+          "Kind": "prim",
+          "Type": "int",
+          "Prim": "3"
+        }
       },
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [
-          {
-            "Name": "x",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "2"
-            }
-          },
-          {
-            "Name": "y",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "3"
-            }
-          }
-        ],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  },
-  {
-    "File": "main.go",
-    "Line": 16,
-    "Function": "",
-    "Frames": [
-      {
-        "ID": "frame:global",
-        "Name": "Global frame",
-        "Kind": "global",
-        "Bindings": [
-          {
-            "Name": "total",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "3"
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 16,
+      "PrevLine": 15,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "x": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "2"
+            },
+            "y": {
+              "Kind": "prim",
+              "Type": "int",
+              "Prim": "3"
             }
           }
-        ],
-        "IsCurrent": false
+        }
+      ],
+      "Globals": {
+        "total": {
+          "Kind": "prim",
+          "Type": "int",
+          "Prim": "3"
+        }
       },
-      {
-        "ID": "frame:0",
-        "Name": "frame 0",
-        "Kind": "stack",
-        "Bindings": [
-          {
-            "Name": "x",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "2"
-            }
-          },
-          {
-            "Name": "y",
-            "Value": {
-              "Kind": "scalar",
-              "Display": "3"
-            }
-          }
-        ],
-        "IsCurrent": true
-      }
-    ],
-    "Objects": []
-  }
-]
+      "Heap": {},
+      "StdoutLen": 2
+    }
+  ],
+  "Output": "3\n"
+}

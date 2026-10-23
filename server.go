@@ -15,7 +15,7 @@ import (
 //go:embed static
 var staticFiles embed.FS
 
-type traceFunc func(context.Context, string) ([]Step, error)
+type traceFunc func(context.Context, string) (*Trace, error)
 
 type server struct {
 	trace traceFunc
@@ -26,7 +26,7 @@ type traceRequest struct {
 }
 
 type traceResponse struct {
-	Steps []Step `json:"steps,omitempty"`
+	Trace *Trace `json:"trace,omitempty"`
 	Error string `json:"error,omitempty"`
 }
 
@@ -37,6 +37,7 @@ func newServer(trace traceFunc) *server {
 func (s *server) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /trace", s.handleTrace)
+	mux.HandleFunc("POST /view", s.handleView)
 
 	staticFS, err := fs.Sub(staticFiles, "static")
 	if err != nil {
@@ -59,13 +60,32 @@ func (s *server) handleTrace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	steps, err := s.trace(r.Context(), req.Code)
+	trace, err := s.trace(r.Context(), req.Code)
 	if err != nil {
 		writeJSON(w, http.StatusBadRequest, traceResponse{Error: err.Error()})
 		return
 	}
 
-	writeJSON(w, http.StatusOK, traceResponse{Steps: steps})
+	writeJSON(w, http.StatusOK, traceResponse{Trace: trace})
+}
+
+func (s *server) handleView(w http.ResponseWriter, r *http.Request) {
+	code := r.FormValue("code")
+	if strings.TrimSpace(code) == "" {
+		http.Error(w, "code is required", http.StatusBadRequest)
+		return
+	}
+
+	trace, err := s.trace(r.Context(), code)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := RenderHTML(w, traceFileName, trace); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func decodeJSON(r io.Reader, out any) error {

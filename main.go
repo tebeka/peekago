@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -16,7 +17,8 @@ import (
 )
 
 var options struct {
-	addr string
+	addr    string
+	htmlOut string
 }
 
 func validateAddr(addr string) error {
@@ -26,16 +28,18 @@ func validateAddr(addr string) error {
 
 func main() {
 	flag.StringVar(&options.addr, "http", ":8080", "HTTP listen address")
+	flag.StringVar(&options.htmlOut, "html", "", "write an interactive HTML viewer to the given path instead of JSON")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [flags]\n\n", path.Base(os.Args[0]))
-		fmt.Fprintln(os.Stderr, "Start the Peek-A-Go web server.")
+		fmt.Fprintf(os.Stderr, "Usage: %s [flags] [go-source-file]\n\n", path.Base(os.Args[0]))
+		fmt.Fprintln(os.Stderr, "Without a source file, start the Peek-A-Go web server.")
+		fmt.Fprintln(os.Stderr, "With a source file, trace it with headless Delve and print the execution trace as JSON (or HTML with -html).")
 		fmt.Fprintln(os.Stderr)
 		fmt.Fprintln(os.Stderr, "Flags:")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
 
-	if flag.NArg() != 0 {
+	if flag.NArg() > 1 {
 		flag.Usage()
 		os.Exit(2)
 	}
@@ -48,6 +52,14 @@ func main() {
 	if _, err := exec.LookPath("dlv"); err != nil {
 		fmt.Fprintf(os.Stderr, "error: `dlv` executable not found.\n")
 		os.Exit(1)
+	}
+
+	if flag.NArg() == 1 {
+		if err := traceToFile(flag.Arg(0)); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+		return
 	}
 
 	server := newServer(TraceSource)
@@ -75,4 +87,25 @@ func main() {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
+}
+
+func traceToFile(sourcePath string) error {
+	trace, err := TraceFile(context.Background(), sourcePath)
+	if err != nil {
+		return err
+	}
+
+	if options.htmlOut == "" {
+		encoder := json.NewEncoder(os.Stdout)
+		encoder.SetIndent("", "  ")
+		return encoder.Encode(trace)
+	}
+
+	out, err := os.Create(options.htmlOut)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	return RenderHTML(out, sourcePath, trace)
 }

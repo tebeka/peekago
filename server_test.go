@@ -6,12 +6,13 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 )
 
 func TestServerRoutesIndex(t *testing.T) {
-	srv := newServer(func(context.Context, string) ([]Step, error) {
+	srv := newServer(func(context.Context, string) (*Trace, error) {
 		return nil, nil
 	})
 
@@ -28,12 +29,14 @@ func TestServerRoutesIndex(t *testing.T) {
 	}
 }
 
-func TestServerRoutesViewer(t *testing.T) {
-	srv := newServer(func(context.Context, string) ([]Step, error) {
-		return nil, nil
+func TestServerView(t *testing.T) {
+	srv := newServer(func(context.Context, string) (*Trace, error) {
+		return &Trace{Source: "package main", Steps: []Step{{File: "main.go", Line: 1}}}, nil
 	})
 
-	req := httptest.NewRequest(http.MethodGet, "/viewer.html", nil)
+	form := url.Values{"code": {"package main"}}
+	req := httptest.NewRequest(http.MethodPost, "/view", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	rec := httptest.NewRecorder()
 	srv.routes().ServeHTTP(rec, req)
 
@@ -41,14 +44,29 @@ func TestServerRoutesViewer(t *testing.T) {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
 	}
 
-	if !strings.Contains(rec.Body.String(), "Step through the trace.") {
-		t.Fatalf("body %q does not contain viewer header", rec.Body.String())
+	if !strings.Contains(rec.Body.String(), "Peek-A-Go — main.go") {
+		t.Fatalf("body %q does not contain viewer title", rec.Body.String())
+	}
+}
+
+func TestServerViewEmptyCode(t *testing.T) {
+	srv := newServer(func(context.Context, string) (*Trace, error) {
+		return nil, nil
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/view", strings.NewReader("code=+"))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	srv.routes().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusBadRequest)
 	}
 }
 
 func TestServerTraceSuccess(t *testing.T) {
-	srv := newServer(func(context.Context, string) ([]Step, error) {
-		return []Step{{File: "main.go", Line: 3}}, nil
+	srv := newServer(func(context.Context, string) (*Trace, error) {
+		return &Trace{Steps: []Step{{File: "main.go", Line: 3}}}, nil
 	})
 
 	req := httptest.NewRequest(http.MethodPost, "/trace", strings.NewReader(`{"code":"package main"}`))
@@ -65,8 +83,8 @@ func TestServerTraceSuccess(t *testing.T) {
 		t.Fatalf("json.Unmarshal() error = %v", err)
 	}
 
-	if len(resp.Steps) != 1 || resp.Steps[0].Line != 3 {
-		t.Fatalf("steps = %#v, want one step at line 3", resp.Steps)
+	if resp.Trace == nil || len(resp.Trace.Steps) != 1 || resp.Trace.Steps[0].Line != 3 {
+		t.Fatalf("trace = %#v, want one step at line 3", resp.Trace)
 	}
 }
 
@@ -81,21 +99,21 @@ func TestServerTraceErrors(t *testing.T) {
 		{
 			name:   "bad json",
 			body:   `{"code":`,
-			trace:  func(context.Context, string) ([]Step, error) { return nil, nil },
+			trace:  func(context.Context, string) (*Trace, error) { return nil, nil },
 			status: http.StatusBadRequest,
 			errMsg: "invalid request body",
 		},
 		{
 			name:   "empty code",
 			body:   `{"code":"   "}`,
-			trace:  func(context.Context, string) ([]Step, error) { return nil, nil },
+			trace:  func(context.Context, string) (*Trace, error) { return nil, nil },
 			status: http.StatusBadRequest,
 			errMsg: "code is required",
 		},
 		{
 			name: "trace failure",
 			body: `{"code":"package main"}`,
-			trace: func(context.Context, string) ([]Step, error) {
+			trace: func(context.Context, string) (*Trace, error) {
 				return nil, errors.New("boom")
 			},
 			status: http.StatusBadRequest,

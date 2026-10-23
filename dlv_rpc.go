@@ -89,7 +89,7 @@ func (c *rpcClient) command(ctx context.Context, cmd debuggerCommand) (*debugger
 	return &out.State, nil
 }
 
-func (c *rpcClient) stacktrace(ctx context.Context, goroutineID int64, depth int) ([]stackFrame, error) {
+func (c *rpcClient) stacktrace(ctx context.Context, goroutineID int64) ([]stackFrame, error) {
 	var out struct {
 		Locations []stackFrame
 	}
@@ -101,7 +101,7 @@ func (c *rpcClient) stacktrace(ctx context.Context, goroutineID int64, depth int
 		Cfg   *loadConfig
 	}{
 		ID:    goroutineID,
-		Depth: depth,
+		Depth: stacktraceDepth,
 		Full:  true,
 		Cfg:   defaultLoadConfig(),
 	}, &out)
@@ -219,7 +219,9 @@ type breakpoint struct {
 }
 
 type stackFrame struct {
-	Location  location   `json:"Location"`
+	File      string     `json:"File"`
+	Line      int        `json:"Line"`
+	Function  *function  `json:"Function"`
 	Locals    []variable `json:"Locals"`
 	Arguments []variable `json:"Arguments"`
 }

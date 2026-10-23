@@ -1,7 +1,3 @@
-const state = {
-  storageKey: 'peek-a-go:last-trace',
-};
-
 const elements = {
   editorInput: document.getElementById('editor-input'),
   runButton: document.getElementById('run-button'),
@@ -35,41 +31,11 @@ const editor = CodeMirror.fromTextArea(elements.editorInput, {
 
 editor.setSize('100%', 640);
 
-elements.runButton.addEventListener('click', runTrace);
-
-async function runTrace() {
-  const code = editor.getValue();
+elements.runButton.form.addEventListener('submit', () => {
   setStatus('Tracing...');
   setBusy(true);
-
-  try {
-    const response = await fetch('/trace', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ code }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'trace failed');
-    }
-
-    sessionStorage.setItem(
-      state.storageKey,
-      JSON.stringify({
-        code,
-        steps: data.steps || [],
-      }),
-    );
-    window.location.href = '/viewer.html';
-  } catch (error) {
-    setStatus(error.message || 'trace failed', true);
-  } finally {
-    setBusy(false);
-  }
-}
+});
+window.addEventListener('pageshow', () => setBusy(false));
 
 function setStatus(message, isError = false) {
   elements.status.textContent = message;
