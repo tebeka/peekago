@@ -35,7 +35,10 @@ elements.runButton.form.addEventListener('submit', () => {
   setStatus('Tracing...');
   setBusy(true);
 });
-window.addEventListener('pageshow', () => setBusy(false));
+window.addEventListener('pageshow', () => {
+  setStatus('Ready.');
+  setBusy(false);
+});
 
 function setStatus(message, isError = false) {
   elements.status.textContent = message;
