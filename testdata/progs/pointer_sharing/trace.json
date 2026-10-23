@@ -1,0 +1,154 @@
+{
+  "Source": "package main\n\ntype Box struct {\n\tVal int\n}\n\nfunc main() {\n\ta := \u0026Box{Val: 1}\n\tb := a\n\tb.Val = 2\n\t_ = a\n\t_ = b\n}\n",
+  "Steps": [
+    {
+      "File": "main.go",
+      "Line": 7,
+      "PrevLine": 0,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 8,
+      "PrevLine": 7,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {}
+        }
+      ],
+      "Globals": {},
+      "Heap": {},
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 9,
+      "PrevLine": 8,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "a": {
+              "Kind": "ref",
+              "Type": "*main.Box",
+              "Ref": "#1"
+            }
+          }
+        }
+      ],
+      "Globals": {},
+      "Heap": {
+        "#1": {
+          "Kind": "struct",
+          "Type": "main.Box",
+          "Fields": [
+            {
+              "Name": "Val",
+              "Value": {
+                "Kind": "prim",
+                "Type": "int",
+                "Prim": "1"
+              }
+            }
+          ]
+        }
+      },
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 10,
+      "PrevLine": 9,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "a": {
+              "Kind": "ref",
+              "Type": "*main.Box",
+              "Ref": "#1"
+            },
+            "b": {
+              "Kind": "ref",
+              "Type": "*main.Box",
+              "Ref": "#1"
+            }
+          }
+        }
+      ],
+      "Globals": {},
+      "Heap": {
+        "#1": {
+          "Kind": "struct",
+          "Type": "main.Box",
+          "Fields": [
+            {
+              "Name": "Val",
+              "Value": {
+                "Kind": "prim",
+                "Type": "int",
+                "Prim": "1"
+              }
+            }
+          ]
+        }
+      },
+      "StdoutLen": 0
+    },
+    {
+      "File": "main.go",
+      "Line": 13,
+      "PrevLine": 10,
+      "Function": "main.main",
+      "Frames": [
+        {
+          "Func": "main.main",
+          "Locals": {
+            "a": {
+              "Kind": "ref",
+              "Type": "*main.Box",
+              "Ref": "#1"
+            },
+            "b": {
+              "Kind": "ref",
+              "Type": "*main.Box",
+              "Ref": "#1"
+            }
+          }
+        }
+      ],
+      "Globals": {},
+      "Heap": {
+        "#1": {
+          "Kind": "struct",
+          "Type": "main.Box",
+          "Fields": [
+            {
+              "Name": "Val",
+              "Value": {
+                "Kind": "prim",
+                "Type": "int",
+                "Prim": "2"
+              }
+            }
+          ]
+        }
+      },
+      "StdoutLen": 0
+    }
+  ],
+  "Output": ""
+}

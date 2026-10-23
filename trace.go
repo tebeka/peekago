@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -12,24 +13,65 @@ const (
 	traceModuleName  = "pkgo-trace"
 	defaultStepLimit = 50
 	debugServerWait  = 5
-	commandTimeout   = 5
+	commandTimeout   = 15
 	maxStringLen     = 128
 	maxArrayValues   = 16
 	maxStructFields  = 16
 	maxVariableDepth = 2
+	stacktraceDepth  = 32
 )
 
 var errStepLimit = errors.New("trace step limit reached")
 
-type Step struct {
-	File     string
-	Line     int
-	Function string
-	Locals   map[string]string
-	Globals  map[string]string
+type Trace struct {
+	Source string
+	Steps  []Step
+	Output string
 }
 
-func TraceFile(ctx context.Context, name string) ([]Step, error) {
+type Step struct {
+	File      string
+	Line      int
+	PrevLine  int
+	Function  string
+	Frames    []Frame
+	Globals   map[string]Value
+	Heap      map[string]Value
+	StdoutLen int
+}
+
+type Frame struct {
+	Func   string
+	Locals map[string]Value
+}
+
+type Value struct {
+	Kind   string  `json:"Kind,omitempty"`
+	Type   string  `json:"Type,omitempty"`
+	Prim   string  `json:"Prim,omitempty"`
+	Ref    string  `json:"Ref,omitempty"`
+	Fields []Field `json:"Fields,omitempty"`
+	Elems  []Value `json:"Elems,omitempty"`
+	Pairs  []Pair  `json:"Pairs,omitempty"`
+	Len    int64   `json:"Len,omitempty"`
+	Cap    int64   `json:"Cap,omitempty"`
+	Offset int64   `json:"Offset,omitempty"`
+
+	// elemSize is set on slice backing arrays only while a step is built, see shareBackingArrays.
+	elemSize uint64
+}
+
+type Field struct {
+	Name  string
+	Value Value
+}
+
+type Pair struct {
+	Key   Value
+	Value Value
+}
+
+func TraceFile(ctx context.Context, name string) (*Trace, error) {
 	src, err := os.ReadFile(name)
 	if err != nil {
 		return nil, fmt.Errorf("read %s: %w", name, err)
@@ -38,10 +80,12 @@ func TraceFile(ctx context.Context, name string) ([]Step, error) {
 	return TraceSource(ctx, string(src))
 }
 
-func TraceSource(ctx context.Context, src string) ([]Step, error) {
+func TraceSource(ctx context.Context, src string) (*Trace, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+
+	trace := &Trace{Source: src}
 
 	tmpDir, err := os.MkdirTemp("", "pkgo-trace-*")
 	if err != nil {
@@ -53,12 +97,19 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 		return nil, err
 	}
 
+	stdoutPath := filepath.Join(tmpDir, "stdout.log")
+	if f, err := os.Create(stdoutPath); err != nil {
+		return nil, fmt.Errorf("create stdout log: %w", err)
+	} else {
+		f.Close()
+	}
+
 	addr, err := reserveLoopbackAddress()
 	if err != nil {
 		return nil, err
 	}
 
-	dlv, err := startDelve(ctx, tmpDir, addr)
+	dlv, err := startDelve(ctx, tmpDir, addr, stdoutPath)
 	if err != nil {
 		return nil, err
 	}
@@ -87,52 +138,70 @@ func TraceSource(ctx context.Context, src string) ([]Step, error) {
 		return nil, errors.New("delve returned no debugger state")
 	}
 
+	finalize := func() *Trace {
+		if data, err := os.ReadFile(stdoutPath); err == nil {
+			trace.Output = string(data)
+		}
+		return trace
+	}
+
 	if state.Exited {
-		return nil, exitedError(state)
+		return finalize(), exitedError(state)
 	}
 
 	mainGoroutineID := currentGoroutineID(state)
 	if mainGoroutineID == 0 {
-		return nil, errors.New("delve did not report the selected goroutine")
+		return finalize(), errors.New("delve did not report the selected goroutine")
+	}
+
+	stdoutLen := func() int {
+		info, err := os.Stat(stdoutPath)
+		if err != nil {
+			return 0
+		}
+		return int(info.Size())
 	}
 
 	var (
-		steps     []Step
 		seenState string
+		prevLine  int
+		arrays    = map[string]Value{} // slice backing arrays seen so far
 	)
 
 	for range defaultStepLimit {
 		state, err = advanceToUserFrame(ctx, client, state, mainGoroutineID)
 		if err != nil {
-			return steps, err
+			return finalize(), err
 		}
 
 		if state.Exited {
-			if len(steps) > 0 && state.ExitStatus == 0 {
-				return steps, nil
+			if len(trace.Steps) > 0 && state.ExitStatus == 0 {
+				return finalize(), nil
 			}
 
-			return steps, exitedError(state)
+			return finalize(), exitedError(state)
 		}
 
-		step, ok, err := snapshot(ctx, client, state)
+		step, ok, err := snapshot(ctx, client, state, prevLine, arrays)
 		if err != nil {
-			return steps, err
+			return finalize(), err
 		}
 
 		if ok {
+			step.StdoutLen = stdoutLen()
 			fingerprint := stepFingerprint(step)
 			if fingerprint != seenState {
-				steps = append(steps, step)
+				trace.Steps = append(trace.Steps, step)
 				seenState = fingerprint
+				prevLine = step.Line
 			}
 		}
 
 		state, err = client.command(ctx, debuggerCommand{Name: "step"})
 		if err != nil {
-			return steps, fmt.Errorf("step: %w", err)
+			return finalize(), fmt.Errorf("step: %w", err)
 		}
 	}
 
-	return steps, errStepLimit
+	return finalize(), errStepLimit
 }
