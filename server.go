@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-//go:embed static
+//go:embed all:static
 var staticFiles embed.FS
 
 type traceFunc func(context.Context, string) (*Trace, error)

@@ -95,6 +95,16 @@ button {
   background: linear-gradient(135deg, var(--ink), #274c77);
 }
 
+select {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  cursor: pointer;
+}
+
 button:disabled {
   cursor: not-allowed;
   opacity: 0.48;

@@ -4,6 +4,7 @@ const elements = {
   buttonLabel: document.querySelector('#run-button .button-label'),
   spinner: document.querySelector('#run-button .spinner'),
   status: document.getElementById('status'),
+  exampleSelect: document.getElementById('example-select'),
 };
 
 const editor = CodeMirror.fromTextArea(elements.editorInput, {
@@ -39,6 +40,22 @@ window.addEventListener('pageshow', () => {
   setStatus('Ready.');
   setBusy(false);
 });
+elements.exampleSelect.addEventListener('change', async () => {
+  const name = elements.exampleSelect.value;
+  elements.exampleSelect.value = '';
+  if (!name) {
+    return;
+  }
+
+  const response = await fetch(`/_examples/${name}.go`);
+  if (!response.ok) {
+    setStatus(`Failed to load example: ${response.statusText}`, true);
+    return;
+  }
+
+  editor.setValue(await response.text());
+  setStatus('Ready.');
+});
 
 function setStatus(message, isError = false) {
   elements.status.textContent = message;
@@ -47,6 +64,7 @@ function setStatus(message, isError = false) {
 
 function setBusy(isBusy) {
   elements.runButton.disabled = isBusy;
+  elements.exampleSelect.disabled = isBusy;
   editor.setOption('readOnly', isBusy);
   elements.runButton.classList.toggle('loading', isBusy);
   elements.buttonLabel.textContent = isBusy ? 'Tracing...' : 'Trace and Open Viewer';

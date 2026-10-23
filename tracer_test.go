@@ -140,6 +140,32 @@ func TestTraceSourceFixtures(t *testing.T) {
 	}
 }
 
+func TestTraceSourceExamples(t *testing.T) {
+	ensureDelve(t)
+
+	files, err := filepath.Glob("static/_examples/*.go")
+	if err != nil {
+		t.Fatalf("Glob() error = %v", err)
+	}
+
+	if len(files) == 0 {
+		t.Fatal("no examples found")
+	}
+
+	for _, file := range files {
+		t.Run(filepath.Base(file), func(t *testing.T) {
+			src, err := os.ReadFile(file)
+			if err != nil {
+				t.Fatalf("ReadFile(%s) error = %v", file, err)
+			}
+
+			if _, err := TraceSource(context.Background(), string(src)); err != nil {
+				t.Fatalf("TraceSource() error = %v", err)
+			}
+		})
+	}
+}
+
 func ensureDelve(t *testing.T) {
 	t.Helper()
 

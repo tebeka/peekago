@@ -61,6 +61,7 @@ go run . path/to/program.go
 The browser UI lets you:
 
 - paste or edit Go source
+- load one of the bundled examples (`static/_examples`)
 - run the tracer
 - step through the trace in the HTML viewer
 

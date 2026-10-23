@@ -19,6 +19,17 @@
         <form class="panel compose compose-single" method="post" action="/view">
           <div class="panel-header">
             <h2>Source</h2>
+            <label class="sr-only" for="example-select">Load example</label>
+            <select id="example-select">
+              <option value="">Load example…</option>
+              <option value="linked-list">Linked list</option>
+              <option value="pointer-aliasing">Pointer aliasing</option>
+              <option value="recursion">Recursion</option>
+              <option value="stdout">Stdout</option>
+              <option value="slice-mutation">Slice mutation</option>
+              <option value="slice-view">Slice view</option>
+              <option value="map-grow">Map grow</option>
+            </select>
           </div>
           <label class="sr-only" for="editor-input">Go source code</label>
           <textarea id="editor-input" name="code" spellcheck="false">package main
