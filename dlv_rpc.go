@@ -61,18 +61,18 @@ func (c *rpcClient) close() {
 	_ = c.conn.Close()
 }
 
-func (c *rpcClient) setAPIVersion(version int) error {
-	return c.call("RPCServer.SetApiVersion", struct {
+func (c *rpcClient) setAPIVersion(ctx context.Context, version int) error {
+	return c.callContext(ctx, "RPCServer.SetApiVersion", struct {
 		APIVersion int
 	}{APIVersion: version}, &struct{}{})
 }
 
-func (c *rpcClient) createBreakpoint(loc string) error {
+func (c *rpcClient) createBreakpoint(ctx context.Context, loc string) error {
 	var out struct {
 		Breakpoint breakpoint `json:"Breakpoint"`
 	}
 
-	return c.call("RPCServer.CreateBreakpoint", struct {
+	return c.callContext(ctx, "RPCServer.CreateBreakpoint", struct {
 		LocExpr string
 	}{LocExpr: loc}, &out)
 }
@@ -142,7 +142,7 @@ func (c *rpcClient) callContext(ctx context.Context, method string, params any, 
 	if deadline, ok := ctx.Deadline(); ok {
 		_ = c.conn.SetDeadline(deadline)
 	} else {
-		_ = c.conn.SetDeadline(time.Now().Add(time.Duration(commandTimeout) * time.Second))
+		_ = c.conn.SetDeadline(time.Now().Add(time.Duration(detachTimeout) * time.Second))
 	}
 	defer c.conn.SetDeadline(time.Time{})
 

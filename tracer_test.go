@@ -235,6 +235,10 @@ func checkFixtureError(t *testing.T, err error, kind string) {
 		if !errors.Is(err, errStepLimit) {
 			t.Fatalf("TraceSource() error = %v, want %v", err, errStepLimit)
 		}
+	case "timeout":
+		if !errors.Is(err, errTraceTimeout) {
+			t.Fatalf("TraceSource() error = %v, want %v", err, errTraceTimeout)
+		}
 	default:
 		t.Fatalf("unknown error fixture kind %q", kind)
 	}

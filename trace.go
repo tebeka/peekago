@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 const (
@@ -13,7 +14,8 @@ const (
 	traceModuleName  = "pkgo-trace"
 	defaultStepLimit = 50
 	debugServerWait  = 5
-	commandTimeout   = 15
+	detachTimeout    = 2
+	traceTimeout     = 10
 	maxStringLen     = 128
 	maxArrayValues   = 16
 	maxStructFields  = 16
@@ -21,7 +23,10 @@ const (
 	stacktraceDepth  = 32
 )
 
-var errStepLimit = errors.New("trace step limit reached")
+var (
+	errStepLimit    = errors.New("trace step limit reached")
+	errTraceTimeout = errors.New("trace timeout reached")
+)
 
 type Trace struct {
 	Source string
@@ -85,6 +90,19 @@ func TraceSource(ctx context.Context, src string) (*Trace, error) {
 		ctx = context.Background()
 	}
 
+	ctx, cancel := context.WithTimeout(ctx, traceTimeout*time.Second)
+	defer cancel()
+
+	trace, err := traceSource(ctx, src)
+	// The delve connection deadline can fire a moment before ctx is marked done.
+	if err != nil && (ctx.Err() != nil || errors.Is(err, os.ErrDeadlineExceeded)) {
+		return trace, errTraceTimeout
+	}
+
+	return trace, err
+}
+
+func traceSource(ctx context.Context, src string) (*Trace, error) {
 	trace := &Trace{Source: src}
 
 	tmpDir, err := os.MkdirTemp("", "pkgo-trace-*")
@@ -121,11 +139,11 @@ func TraceSource(ctx context.Context, src string) (*Trace, error) {
 	}
 	defer client.close()
 
-	if err := client.setAPIVersion(2); err != nil {
+	if err := client.setAPIVersion(ctx, 2); err != nil {
 		return nil, fmt.Errorf("set delve api version: %w", err)
 	}
 
-	if err := client.createBreakpoint("main.main"); err != nil {
+	if err := client.createBreakpoint(ctx, "main.main"); err != nil {
 		return nil, fmt.Errorf("create main breakpoint: %w", err)
 	}
 
