@@ -2,11 +2,13 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -15,16 +17,19 @@ import (
 // dockerOverhead is the time allowed for starting and removing the container on top of the trace.
 const dockerOverhead = 10
 
+// dockerCmd is the container command, set DOCKER=podman to use podman.
+var dockerCmd = cmp.Or(os.Getenv("DOCKER"), "docker")
+
 // TraceDocker traces src inside a throwaway, network-less container running the image's peek-a-go CLI.
 func TraceDocker(ctx context.Context, image, src string) (*Trace, error) {
 	ctx, cancel := context.WithTimeout(ctx, (debugServerWait+traceTimeout+dockerOverhead)*time.Second)
 	defer cancel()
 
 	name := "peek-a-go-" + strings.ToLower(rand.Text())
-	cmd := exec.CommandContext(ctx, "docker", dockerArgs(name, image)...)
+	cmd := exec.CommandContext(ctx, dockerCmd, dockerArgs(name, image)...)
 	// Killing the docker client doesn't stop the container.
 	cmd.Cancel = func() error {
-		return exec.Command("docker", "kill", name).Run()
+		return exec.Command(dockerCmd, "kill", name).Run()
 	}
 	cmd.Stdin = strings.NewReader(src)
 	var stdout, stderr bytes.Buffer
@@ -38,7 +43,7 @@ func TraceDocker(ctx context.Context, image, src string) (*Trace, error) {
 
 		msg := strings.TrimPrefix(strings.TrimSpace(stderr.String()), "error: ")
 		if msg == "" {
-			return nil, fmt.Errorf("docker: %w", err)
+			return nil, fmt.Errorf("%s: %w", dockerCmd, err)
 		}
 
 		return nil, errors.New(msg)

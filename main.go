@@ -31,7 +31,7 @@ func validateAddr(addr string) error {
 func main() {
 	flag.StringVar(&options.addr, "http", ":8080", "HTTP listen address")
 	flag.StringVar(&options.htmlOut, "html", "", "write an interactive HTML viewer to the given path instead of JSON")
-	flag.StringVar(&options.runner, "runner", "exec", "how the web server runs programs: exec (directly, unsandboxed) or docker (in a sandboxed container)")
+	flag.StringVar(&options.runner, "runner", "exec", "how the web server runs programs: exec (directly, unsandboxed) or docker (in a sandboxed container, set $DOCKER to use another command such as podman)")
 	flag.StringVar(&options.image, "image", "peek-a-go", "docker image for the docker runner")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [flags] [go-source-file]\n\n", path.Base(os.Args[0]))
@@ -68,7 +68,7 @@ func main() {
 		requireExecutable("dlv")
 		trace = TraceSource
 	case "docker":
-		requireExecutable("docker")
+		requireExecutable(dockerCmd)
 		trace = func(ctx context.Context, src string) (*Trace, error) {
 			return TraceDocker(ctx, options.image, src)
 		}

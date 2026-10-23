@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// Build the image first with: docker build -t peek-a-go .
+// Build the image first with: docker build -t peek-a-go . (or podman with DOCKER=podman)
 const testImage = "peek-a-go"
 
 func TestTraceDockerExamples(t *testing.T) {
@@ -105,7 +105,7 @@ func main() {
 		t.Fatalf("TraceDocker() took %v after cancel", elapsed)
 	}
 
-	out, err := exec.Command("docker", "ps", "-q", "--filter", "name=peek-a-go-").Output()
+	out, err := exec.Command(dockerCmd, "ps", "-q", "--filter", "name=peek-a-go-").Output()
 	if err != nil {
 		t.Fatalf("docker ps error = %v", err)
 	}
@@ -118,7 +118,7 @@ func main() {
 func ensureImage(t *testing.T) {
 	t.Helper()
 
-	if err := exec.Command("docker", "image", "inspect", testImage).Run(); err != nil {
+	if err := exec.Command(dockerCmd, "image", "inspect", testImage).Run(); err != nil {
 		t.Skipf("docker image %q not available", testImage)
 	}
 }

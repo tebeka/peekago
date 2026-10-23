@@ -61,6 +61,13 @@ docker build -t peek-a-go .
 go run . -runner docker
 ```
 
+To use podman (or another Docker-compatible command), set the `DOCKER` environment variable:
+
+```bash
+podman build -t peek-a-go .
+DOCKER=podman go run . -runner docker
+```
+
 Use `-image` to pick another image. Rebuild the image after changing the tracer code.
 
 At most 4 traces run at once; extra requests get `503 Service Unavailable`.
