@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -13,6 +14,25 @@ import (
 
 // Build the image first with: docker build -t peek-a-go . (or podman with DOCKER=podman)
 const testImage = "peek-a-go"
+
+// testRuntime is the container runtime for the tests, set PEEKAGO_RUNTIME=runsc to test under gVisor.
+var testRuntime = os.Getenv("PEEKAGO_RUNTIME")
+
+func TestDockerArgsRuntime(t *testing.T) {
+	if args := strings.Join(dockerArgs("n", "img", ""), " "); strings.Contains(args, "--runtime") {
+		t.Fatalf("dockerArgs() = %q, want no --runtime", args)
+	}
+
+	args := dockerArgs("n", "img", "runsc")
+	if !slices.Contains(args, "--runtime=runsc") {
+		t.Fatalf("dockerArgs() = %q, want --runtime=runsc", args)
+	}
+
+	// Flags after the image are passed to the container's entrypoint.
+	if i := slices.Index(args, "img"); i < slices.Index(args, "--runtime=runsc") {
+		t.Fatalf("dockerArgs() = %q, --runtime after image", args)
+	}
+}
 
 func TestTraceDockerExamples(t *testing.T) {
 	ensureImage(t)
@@ -29,7 +49,7 @@ func TestTraceDockerExamples(t *testing.T) {
 				t.Fatalf("ReadFile(%s) error = %v", file, err)
 			}
 
-			trace, err := TraceDocker(context.Background(), testImage, string(src))
+			trace, err := TraceDocker(context.Background(), testImage, testRuntime, string(src))
 			if err != nil {
 				t.Fatalf("TraceDocker() error = %v", err)
 			}
@@ -49,7 +69,7 @@ func TestTraceDockerError(t *testing.T) {
 		t.Fatalf("ReadFile() error = %v", err)
 	}
 
-	_, err = TraceDocker(context.Background(), testImage, string(src))
+	_, err = TraceDocker(context.Background(), testImage, testRuntime, string(src))
 	if err == nil {
 		t.Fatal("TraceDocker() error = nil, want error")
 	}
@@ -72,7 +92,7 @@ func main() {
 	_ = http.StatusOK
 }
 `
-	if _, err := TraceDocker(context.Background(), testImage, src); err != nil {
+	if _, err := TraceDocker(context.Background(), testImage, testRuntime, src); err != nil {
 		t.Fatalf("TraceDocker() error = %v", err)
 	}
 
@@ -96,7 +116,7 @@ func main() {
 	defer cancel()
 
 	start := time.Now()
-	if _, err := TraceDocker(ctx, testImage, src); !errors.Is(err, errTraceTimeout) {
+	if _, err := TraceDocker(ctx, testImage, testRuntime, src); !errors.Is(err, errTraceTimeout) {
 		t.Fatalf("TraceDocker() error = %v, want %v", err, errTraceTimeout)
 	}
 

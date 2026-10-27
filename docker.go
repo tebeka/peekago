@@ -21,12 +21,13 @@ const dockerOverhead = 10
 var dockerCmd = cmp.Or(os.Getenv("DOCKER"), "docker")
 
 // TraceDocker traces src inside a throwaway, network-less container running the image's peek-a-go CLI.
-func TraceDocker(ctx context.Context, image, src string) (*Trace, error) {
+// A non-empty runtime selects the container runtime, e.g. runsc for gVisor.
+func TraceDocker(ctx context.Context, image, runtime, src string) (*Trace, error) {
 	ctx, cancel := context.WithTimeout(ctx, (debugServerWait+traceTimeout+dockerOverhead)*time.Second)
 	defer cancel()
 
 	name := "peek-a-go-" + strings.ToLower(rand.Text())
-	cmd := exec.CommandContext(ctx, dockerCmd, dockerArgs(name, image)...)
+	cmd := exec.CommandContext(ctx, dockerCmd, dockerArgs(name, image, runtime)...)
 	// Killing the docker client doesn't stop the container.
 	cmd.Cancel = func() error {
 		return exec.Command(dockerCmd, "kill", name).Run()
@@ -57,8 +58,8 @@ func TraceDocker(ctx context.Context, image, src string) (*Trace, error) {
 	return &trace, nil
 }
 
-func dockerArgs(name, image string) []string {
-	return []string{
+func dockerArgs(name, image, runtime string) []string {
+	args := []string{
 		"run", "--rm", "-i",
 		"--name", name,
 		"--network=none",
@@ -70,7 +71,10 @@ func dockerArgs(name, image string) []string {
 		"--cap-drop=ALL",
 		"--cap-add=SYS_PTRACE",
 		"--security-opt=no-new-privileges",
-		image,
-		"/dev/stdin",
 	}
+	if runtime != "" {
+		args = append(args, "--runtime="+runtime)
+	}
+
+	return append(args, image, "/dev/stdin")
 }

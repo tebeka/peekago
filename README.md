@@ -70,6 +70,14 @@ DOCKER=podman go run . -runner docker
 
 Use `-image` to pick another image. Rebuild the image after changing the tracer code.
 
+For stronger isolation, run the containers under [gVisor](https://gvisor.dev), which intercepts the traced program's system calls in a user-space kernel instead of passing them to the host kernel. [Install runsc](https://gvisor.dev/docs/user_guide/install/) and register it with Docker, then select it with `-runtime`:
+
+```bash
+go run . -runner docker -runtime runsc
+```
+
+To run the docker tests under gVisor, set `PEEKAGO_RUNTIME=runsc`.
+
 At most 4 traces run at once; extra requests get `503 Service Unavailable`.
 
 ## Command Line

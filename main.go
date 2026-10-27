@@ -21,6 +21,7 @@ var options struct {
 	htmlOut string
 	runner  string
 	image   string
+	runtime string
 }
 
 func validateAddr(addr string) error {
@@ -33,6 +34,7 @@ func main() {
 	flag.StringVar(&options.htmlOut, "html", "", "write an interactive HTML viewer to the given path instead of JSON")
 	flag.StringVar(&options.runner, "runner", "exec", "how the web server runs programs: exec (directly, unsandboxed) or docker (in a sandboxed container, set $DOCKER to use another command such as podman)")
 	flag.StringVar(&options.image, "image", "peek-a-go", "docker image for the docker runner")
+	flag.StringVar(&options.runtime, "runtime", "", "container runtime for the docker runner, e.g. runsc for gVisor (default is the docker default)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [flags] [go-source-file]\n\n", path.Base(os.Args[0]))
 		fmt.Fprintln(os.Stderr, "Without a source file, start the Peek-A-Go web server.")
@@ -70,7 +72,7 @@ func main() {
 	case "docker":
 		requireExecutable(dockerCmd)
 		trace = func(ctx context.Context, src string) (*Trace, error) {
-			return TraceDocker(ctx, options.image, src)
+			return TraceDocker(ctx, options.image, options.runtime, src)
 		}
 	default:
 		fmt.Fprintf(os.Stderr, "error: unknown -runner %q (want exec or docker)\n", options.runner)
@@ -100,7 +102,7 @@ func main() {
 		}
 	}()
 
-	slog.Info("server starting", "address", options.addr, "runner", options.runner)
+	slog.Info("server starting", "address", options.addr, "runner", options.runner, "runtime", options.runtime)
 	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
