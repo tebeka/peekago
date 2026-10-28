@@ -34,7 +34,7 @@ func main() {
 	flag.StringVar(&options.htmlOut, "html", "", "write an interactive HTML viewer to the given path instead of JSON")
 	flag.StringVar(&options.runner, "runner", "exec", "how the web server runs programs: exec (directly, unsandboxed) or docker (in a sandboxed container, set $DOCKER to use another command such as podman)")
 	flag.StringVar(&options.image, "image", "peek-a-go", "docker image for the docker runner")
-	flag.StringVar(&options.runtime, "runtime", "", "container runtime for the docker runner, e.g. runsc for gVisor (default is the docker default)")
+	flag.StringVar(&options.runtime, "runtime", "auto", "container runtime for the docker runner: auto (gVisor's runsc if available), a runtime name such as runsc, or empty for the docker default")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [flags] [go-source-file]\n\n", path.Base(os.Args[0]))
 		fmt.Fprintln(os.Stderr, "Without a source file, start the Peek-A-Go web server.")
@@ -71,6 +71,9 @@ func main() {
 		trace = TraceSource
 	case "docker":
 		requireExecutable(dockerCmd)
+		if options.runtime == "auto" {
+			options.runtime = detectRuntime()
+		}
 		trace = func(ctx context.Context, src string) (*Trace, error) {
 			return TraceDocker(ctx, options.image, options.runtime, src)
 		}

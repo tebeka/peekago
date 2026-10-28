@@ -70,7 +70,9 @@ DOCKER=podman go run . -runner docker
 
 Use `-image` to pick another image. Rebuild the image after changing the tracer code.
 
-For stronger isolation, run the containers under [gVisor](https://gvisor.dev), which intercepts the traced program's system calls in a user-space kernel instead of passing them to the host kernel. [Install runsc](https://gvisor.dev/docs/user_guide/install/) and register it with Docker, then select it with `-runtime`:
+For stronger isolation, run the containers under [gVisor](https://gvisor.dev), which intercepts the traced program's system calls in a user-space kernel instead of passing them to the host kernel. [Install runsc](https://gvisor.dev/docs/user_guide/install/) and register it with Docker (podman finds it in `$PATH`). The docker runner uses runsc automatically when it's available, the server logs the runtime it picked.
+
+Use `-runtime` to pick a runtime yourself, or `-runtime=` for the docker default:
 
 ```bash
 go run . -runner docker -runtime runsc
