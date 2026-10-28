@@ -78,3 +78,36 @@ func dockerArgs(name, image, runtime string) []string {
 
 	return append(args, image, "/dev/stdin")
 }
+
+// gvisorRuntime is the gVisor container runtime.
+const gvisorRuntime = "runsc"
+
+// detectRuntime returns gvisorRuntime if the container command can use it, otherwise "" for the default runtime.
+func detectRuntime() string {
+	// Docker lists the runtimes registered with the daemon.
+	out, err := exec.Command(dockerCmd, "info", "--format", "{{json .Runtimes}}").Output()
+	if err == nil {
+		if hasRuntime(out, gvisorRuntime) {
+			return gvisorRuntime
+		}
+		return ""
+	}
+
+	// Podman doesn't list runtimes, but finds runsc in $PATH.
+	if _, err := exec.LookPath(gvisorRuntime); err == nil {
+		return gvisorRuntime
+	}
+
+	return ""
+}
+
+// hasRuntime reports whether the JSON output of docker info's .Runtimes contains name.
+func hasRuntime(data []byte, name string) bool {
+	var runtimes map[string]json.RawMessage
+	if err := json.Unmarshal(data, &runtimes); err != nil {
+		return false
+	}
+
+	_, ok := runtimes[name]
+	return ok
+}

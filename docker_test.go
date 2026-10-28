@@ -18,6 +18,23 @@ const testImage = "peek-a-go"
 // testRuntime is the container runtime for the tests, set PEEKAGO_RUNTIME=runsc to test under gVisor.
 var testRuntime = os.Getenv("PEEKAGO_RUNTIME")
 
+func TestHasRuntime(t *testing.T) {
+	tests := []struct {
+		data string
+		want bool
+	}{
+		{`{"io.containerd.runc.v2":{"path":"runc"},"runc":{"path":"runc"},"runsc":{"path":"/usr/local/bin/runsc"}}`, true},
+		{`{"io.containerd.runc.v2":{"path":"runc"},"runc":{"path":"runc"}}`, false},
+		{`not json`, false},
+	}
+
+	for _, tc := range tests {
+		if got := hasRuntime([]byte(tc.data), "runsc"); got != tc.want {
+			t.Errorf("hasRuntime(%s) = %v, want %v", tc.data, got, tc.want)
+		}
+	}
+}
+
 func TestDockerArgsRuntime(t *testing.T) {
 	if args := strings.Join(dockerArgs("n", "img", ""), " "); strings.Contains(args, "--runtime") {
 		t.Fatalf("dockerArgs() = %q, want no --runtime", args)
